@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1 class="header">How to export and deplatform your Facebook content</h1>
+
+<p>Fortunately, Facebook has provided a way to export your Facebook content for a number of years.  They recently added the ability format your metadata in <a href="https://en.wikipedia.org/wiki/JSON">JSON</a> notation which makes it easier for services like Deplatformr to re-purpose it.</p>
+
+<p>The process is quite simple and illustrated below.</p>
+<ol>
+    <li>Request a download.</li>
+    <li>Wait for your download.</li>
+    <li>Save your download.</li>
+</ol>
+
+<hr style="margin-bottom: 30px;">
+
+<h3>Step 1: Request a download</h3>
+1.a) Login to your Facebook account and select <span class="highlight">Settings</span> from the top menu.
+
+<p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step1a.png') }}" class="instructions"/><p>
+
+1.b) Select <span class="highlight">Your Facebook Information</span> and then the <span class="highlight">Download Your Information</span> option.
+<p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step1b.png') }}" class="instructions img-fluid"/><p>
+
+1.c) In the <span style="font-weight: bold;">Request Copy</span> section, select the following options:
+<ul><li>Date Range: <span class="highlight">All of my data</span></li>
+    <li>Format: <span class="highlight">JSON</span></li>
+    <li>Media Quality: <span class="highlight">High<span></li>
+</ul>
+
+1.d) In the <span style="font-weight: bold;">Your Information</span> section, check the following three options:
+<ul><li><span class="highlight">Posts</span></li>
+    <li><span class="highlight">Photos and Videos</span></li>
+    <li><span class="highlight">Profile Information<span></li>
+</ul>
+
+<p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step1c.png') }}" class="instructions img-fluid" style="width: auto; max-height: 807px;"/><p>
+
+<p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step1d.png') }}" class="instructions img-fluid"/><p>
+
+1.e) Facebook begins to prepare your download package.
+
+<p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step1e.png') }}" class="instructions img-fluid"/><p>
+
+<h2>Step 2: Wait for your download</h2>
+
+2.a) Using the address associated with your account, Facebook will send you a notification email letting you know that your download package is being created. Depending on the size of your account and the current demand on Facebook servers this could take a while. However, the average Facebook account will only take a few minutes to prepare a download package.
+
+<p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step2a.png') }}" class="instructions inmg-fluid"/><p>
+
+2.b) Facebook will send you a notification email letting you know when your download package is available. You will also see a notification pop-up in Facebook if you are logged in at this time.
+
+<p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step2b.png') }}" class="instructions"/><p>
+
+<h2>Step 3: Save your download</h2>
+<p>3.a) Login to Facebook and return to <span class="highlight">Settings</span> > <span class="highlight">Your Facebook Information</span> > <span class="highlight">Download Your Information</span>.</p>
+
+<p style="margin-top: 10px;">This time select the <span style="font-weight: bold;">Available Copies</span> tab to the right of <span style="font-weight: bold;">Request Copy</span>.</p>
+
+<p style="margin-top: 10px;">Press the <span class="highlight">Download</span> button.</p>
+
+<p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step3a.png') }}" class="instructions"/><p>
+
+3.b) Enter your Facebook password.
+
+<p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step3b.png') }}" class="instructions"/><p>
+
+3.c) Choose a place on your computer to save the <span style="font-weight: bold;">.zip</span> file containing your Facebook content and metadata.
+
+<p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step3c.png') }}" class="instructions"/><p>
+
+<h2>Next steps</h2>
+Go to  <span style="font-weight: bold;"><a href="{{ url_for('facebook_upload') }}">Facebook > Upload content</a></span> to move this <span style="font-weight: bold;">.zip</span> file to Deplatformr and have it re-process and backup your Facebook content to decentralized Filecoin storage.
+
+<hr style="margin: 20px 0;"/>
+<span class="highlight"><span style="font-weight: bold;">PLEASE NOTE:</span></span>
+<p style="margin-top: 10px;"><em>This is a prototype version of Deplatformr. We are going to assume that you've followed the steps above and that this file: 
+    <p style="margin-top: 10px;"><i class="fa fa-caret-right" style="margin-right: 10px;"></i><a href="{{ url_for('static', filename='sample_data/facebook-deplatformr.zip') }}">facebook-deplatformr.zip</a></p>
+<p style="margin-top: 10px;">is the one made available to you by Facebook. Please download it and use it to continue testing Deplatformr, starting with the <span style="font-weight: bold;"><a href="{{ url_for('facebook_upload') }}">Facebook > Upload content</a></span> step.</em></p>
+
+{% endblock %}

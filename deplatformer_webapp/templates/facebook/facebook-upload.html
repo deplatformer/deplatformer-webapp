@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+  {% if upload %}
+<div style="margin-left: 25px;">
+ <i class="fa fa-eye fa-lg" style="margin-right: 5px;"></i>View your uploaded data at <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i><a href="{{ url_for('facebook_view') }}"> Facebook > View content</a>
+</div>
+{% endif %}
+
+
+<div class="row" style="margin-top: 50px;">
+
+<div class="col">
+
+  <form action = "{{ url_for('facebook_upload') }}" method = "POST" enctype = "multipart/form-data">
+
+  <div class="input-group mb-3" id="facebook-upload">
+    <div class="custom-file">
+      <input type="file" class="custom-file-input" name="uploadfile" id="uploadfile" accept=".zip">
+      <label class="custom-file-label" for="uploadfile" aria-describedby="inputGroupFileAddon02">Choose zip file</label>
+    </div>
+    <div class="input-group-append">
+      <input type="submit" class="input-group-text" id="upload-button" value="Upload" />
+    </div>
+  </div>
+
+  </form>
+
+
+<!-- end column -->
+</div>
+
+<!-- end row -->
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script type='text/javascript'>
+// Add the name of the selected file to the form input
+$(".custom-file-input").on("change", function() {
+  var files = $("#uploadfile")[0].files;
+  if (files.length > 1) {
+    $(this).siblings(".custom-file-label").addClass("selected").html("Multiple files selected");
+  }
+  else {
+    var fileName = $(this).val().split("\\").pop();
+    $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+  }
+});
+$("#upload-button").on("click", function(){
+  alert("The Deplatformr prototype isn't set up to run asynchronous background tasks with real time updates yet. Uploading your files to the Filecoin network will take a couple of minutes. Please don't close this tab. However, do feel free to close your eyes and relax...");
+});
+</script>
+{% endblock %}

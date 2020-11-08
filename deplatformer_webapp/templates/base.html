@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deplatformr - Prototype</title>
+
+<link rel="shortcut icon" href="{{ url_for('static', filename='assets/favicon.ico') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='fontawesome/css/all.min.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet"> 
+
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.js"></script>
+<![endif]-->
+
+{# *** Allow sub-templates to insert extra html to the head section *** #}
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<div class="navbar navbar-expand fixed-top" id="mainNav">
+    <div class="navbar-brand">
+    <a href="{{ url_for('homepage') }}"><img src="{{ url_for('static', filename='assets/deplatformr-white.png') }}" class="img-fluid" /></a>
+    </div>
+    <ul class="navbar-nav ml-auto">
+        {% if call_or_get(current_user.is_authenticated) %}
+        <li class="nav-item"><a href="{{ url_for('user.edit_user_profile') }}">
+        <span class="topmenu-icon"><i class="fa fa-user"></i></span>
+        <span class="topmenu-title">{{ current_user.username or current_user.email }}</span></a>
+        </li>
+        <li class="nav-item"><a href="{{ url_for('user.logout') }}">
+        <span class="topmenu-icon"><i class="fa fa-power-off"></i></span>
+        <span class="topmenu-title">Logout</span></a>
+        </li>
+        {% endif %}
+    </ul>
+    </div>
+</div>
+
+<div id="wrapper">
+    <div id="sidebar-wrapper">
+        <aside id="sidebar">
+            <ul id="sidemenu" class="sidebar-nav" style="margin-top: 80px;">
+                <li>
+                    <a class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-2">
+                        <div class="float-left"><img src="{{ url_for('static', filename='assets/filecoin-logo.svg') }}" id="filecoin-logo"/></div>
+                        <span class="sidebar-title">Filecoin</span>
+                        <b class="caret"></b>
+                    </a>
+                    <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">
+                        <li><a class="submenu" href="{{ url_for('filecoin_files') }}" ><i class="fa fa-caret-right"></i>Files</a></li>
+                        <li><a class="submenu" href="{{ url_for('filecoin_wallets') }}"><i class="fa fa-caret-right"></i>Wallets</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-3">
+                        <span class="sidebar-icon"><i class="fab fa-facebook fa-lg"></i></span>
+                        <span class="sidebar-title">Facebook</span>
+                        <b class="caret"></b>
+                    </a>
+                    <ul id="submenu-3" class="panel-collapse collapse panel-switch" role="menu">
+                        <li><a a class="submenu" href="{{ url_for('facebook_deplatform') }}"><i class="fa fa-caret-right"></i>Deplatform</a></li>
+                        <li><a a class="submenu" href="{{ url_for('facebook_upload') }}"><i class="fa fa-caret-right"></i>Upload content</a></li>
+                        <li><a a class="submenu" href="{{ url_for('facebook_view') }}"><i class="fa fa-caret-right"></i>View content</a></li>
+                        <li><a a class="submenu" href="{{ url_for('facebook_manage') }}"><i class="fa fa-caret-right"></i>Manage content</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="{{ url_for('instagram') }}">
+                        <span class="sidebar-icon"><i class="fab fa-instagram fa-lg"></i></span>
+                        <span class="sidebar-title">Instagram</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('icloud') }}">
+                        <span class="sidebar-icon"><i class="fab fa-apple fa-lg"></i></span>
+                        <span class="sidebar-title">iCloud Photos</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('google') }}">
+                        <span class="sidebar-icon"><i class="fab fa-google fa-lg"></i></span>
+                        <span class="sidebar-title">Google Photos</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>            
+    </div>
+    <main id="page-content-wrapper" role="main">
+        <div class="container-fluid" style="margin: 15px;">
+        {% block main %}
+
+            <div class="breadcrumbs">{{ breadcrumb }}</div>
+
+            {% block flash_messages %}
+                {%- with messages = get_flashed_messages(with_categories=true) -%}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-dismissible 
+                        {% if category == 'success' %} alert-success {% else %} {{ category }} {% endif %}" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        {{ message }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {%- endwith %}
+            {% endblock %}
+
+            {% block content %}{% endblock %}
+
+        {% endblock %}
+        </div> 
+    </main>
+
+
+<script src="{{ url_for('static', filename='js/jquery-3.5.0.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+{# *** Allow sub-templates to insert extra html to the bottom of the body *** #}
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

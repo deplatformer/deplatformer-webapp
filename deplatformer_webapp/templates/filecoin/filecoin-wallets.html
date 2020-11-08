@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/dataTables.bootstrap4.min.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+  <table id="logs-table" class="table table-striped table-bordered">
+    <thead>
+    <tr>
+    <th><strong>Name</strong></th>
+    <th><strong>FIL Balance</strong></th>
+    <th><strong>Address</strong></th>
+    <th><strong>FFS</strong></th>
+    <th><strong>Type</strong></th>
+    </tr>
+    </thead>
+    {% if wallets %}
+      {% for wallet in wallets %}
+        <tr>
+          <td>{{ wallet["name"] }}</td>
+          <td>{{ wallet["balance"] }}</td>
+          <td>{{ wallet["address"] }}</td>
+          <td>{{ wallet["ffs"] }}</td>
+          <td>{{ wallet["type"] }}</td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+  </table>
+
+<h1 class="header" style="margin-top: 100px;">Deal history</h2>
+Coming soon.
+</div> <!-- end container -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
+<script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
+
+<script type="text/javascript" class="init">
+    $(document).ready(function() {
+        $('#files-table').DataTable( {
+            "lengthMenu": [[10, 30, 60, -1], [10, 30, 60, "All"]],
+            "pageLength": 10,
+            "pagingType": "full_numbers",
+            "order": [[ 2, "desc" ]]
+        } );
+        $('#logs-table').DataTable( {
+            "lengthMenu": [[10, 30, 60, -1], [10, 30, 60, "All"]],
+            "pageLength": 10,
+            "pagingType": "full_numbers",
+            "order": [[ 0, "desc" ]]
+        } );
+    } );
+</script>
+{% endblock %}

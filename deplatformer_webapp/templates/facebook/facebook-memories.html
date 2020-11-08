@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<H1 class="header" style="text-align: center;">On this day, {{ month_script }} {{ day }}:</H1>
+
+<div class="small_note"><a href="{{ url_for('facebook_view') }}">back</a> | send daily as <a href="{{ url_for('facebook_manage') }}">email or text</a></div>
+
+<div class='container-fluid feed' style="margin-top: 50px;">
+
+{% if media_posts %}
+
+    {% for key in media_posts %}
+        <div class='post container-fluid'>
+        <div id='on-this-day'>
+            {{ media_posts[key]["time_lapse"] }} years ago today (in {{ media_posts[key]["post_year"] }}), you posted:
+        </div>
+
+        <div class='description d-block mx-auto'>
+            {% if media_posts[key]["post"] %}
+                <p>{{ media_posts[key]["post"] }}</p>
+            {% endif %}
+
+
+        <!-- TODO: Add URL previews -->
+        {% if media_posts[key]["urls"] %}
+            {% for url in media_posts[key]["urls"] %}
+                <p><a href='{{ url }}'>{{ url }}</a></p>
+            {% endfor %}
+        {% endif %}
+
+        {% if media_posts[key]["files"] %}
+            {% for filekey in media_posts[key]["files"] %}
+
+                {% if media_posts[key]["files"][filekey]["file_post"] %}
+                    <p>{{ media_posts[key]["files"][filekey]["file_post"]}}</p>
+                {% endif %}
+
+                <!-- TODO: Add URL previews -->
+                {% if media_posts[key]["files"][filekey]["urls"] %}
+                    {% for url in media_posts[key]["files"][filekey]["urls"] %}
+                        <p><a href='{{ url }}'>{{ url }}</a></p>
+                    {% endfor %}
+                {% endif %}
+
+                {% if media_posts[key]["files"][filekey]["mimetype"] == "video" %}
+                    <div class="embed-responsive embed-responsive-4by3">
+                         <video controls><source src="/userfile/facebook/{{ filekey }}" /></video>
+                    </div>
+                {% else %}
+                    <img src="/userfile/facebook/{{ filekey }}" class="img-fluid" />
+                {% endif %}
+
+                
+            {% endfor %}
+        {% endif %}
+        </div>
+        </div>
+    {% endfor %}
+{% else %}
+<div class='description d-block mx-auto'>You did not upload any photos or videos on this day.</div>
+
+{% endif %}
+
+
+
+{% if non_media_posts %}
+    <div class='description d-block mx-auto'>
+    <a onClick='showposts()' href='#more-posts'>View other posts</a></div>
+    <div id='more-posts'>
+    {% for key in non_media_posts %}
+        <div class='post container-fluid'>
+            <div id='on-this-day'>
+                {{ non_media_posts[key]["time_lapse"] }} years ago today (in {{ non_media_posts[key]["post_year"] }}), you posted:
+            </div>
+
+            <div class='description d-block mx-auto'>
+            {% if non_media_posts[key]["post"] %}
+                <p>{{ non_media_posts[key]["post"] }}</p>
+            {% endif %}
+
+            {% if non_media_posts[key]["url_label"] %}
+                <p>{{ non_media_posts[key]["url_label"] }}</p>
+            {% endif %}
+
+            <!-- TODO: Add URL previews -->
+            {% if non_media_posts[key]["urls"] %}
+                {% for url in non_media_posts[key]["urls"] %}
+                    <p><a href='{{ url }}'>{{ url }}</a></p>
+                {% endfor %}
+            {% endif %}
+
+            </div>
+        </div>
+    {% endfor %}
+
+    </div>
+{% endif %}
+
+
+</div>
+
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script type='text/javascript'>
+    function showposts() {
+        var e = document.getElementById('more-posts');
+        if ( e.style.display == 'block' )
+            e.style.display ='none';
+        else 
+            e.style.display = 'block';
+    }
+</script>
+{% endblock %}

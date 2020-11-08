@@ -1,0 +1,17 @@
+{
+  "name": "deplatformer-webbapp-serverless",
+  "version": "1.0.0",
+  "description": "Dependencies for serverless deployment",
+  "main": "index.js",
+  "dependencies": {
+    "serverless": "^2.11.0",
+    "serverless-python-requirements": "^5.1.0",
+    "serverless-wsgi": "^1.7.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

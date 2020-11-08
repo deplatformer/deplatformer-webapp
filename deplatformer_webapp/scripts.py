@@ -2,7 +2,6 @@
 # https://github.com/sdispater/poetry/issues/241.
 from subprocess import check_call
 
-
 # def format() -> None:
 #     check_call(
 #         ["black", "--check", "--diff", "src/", "tests/"],

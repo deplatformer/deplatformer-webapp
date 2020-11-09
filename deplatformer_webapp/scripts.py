@@ -2,10 +2,13 @@
 # https://github.com/sdispater/poetry/issues/241.
 from subprocess import check_call
 
-# def format() -> None:
-#     check_call(
-#         ["black", "--check", "--diff", "src/", "tests/"],
-#     )
+
+def format() -> None:
+    check_call(
+        ["isort deplatformer_webapp tests && black ."],
+        shell=True,
+    )
+
 
 # def reformat() -> None:
 #     check_call(["black", "src/", "tests/"])

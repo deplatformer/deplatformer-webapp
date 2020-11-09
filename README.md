@@ -1,4 +1,7 @@
-# Deplatformr prototype
+# Deplatformer
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 
 A prototype of the Deplatformr concept created as part of the [Gitcoin Apollo](https://gitcoin.co/hackathon/filecoin/) hackathon.
 

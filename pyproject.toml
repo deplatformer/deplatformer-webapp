@@ -52,11 +52,12 @@ flake8 = "^3.8.4"
 pytest = "^6.1.2"
 isort = "^5.6.4"
 pylint = "^2.6.0"
+flakehell = "^0.7.0"
 
 [tool.poetry.scripts]
 deplatformer = 'deplatformer_webapp.cli:cli'
 format = 'deplatformer_webapp.scripts:format'
-
+lint = 'deplatformer_webapp.scripts:lint'
 
 [tool.black]
 line-length = 120
@@ -78,6 +79,31 @@ exclude = '''
   )/
 )
 '''
+
+[tool.flakehell]
+exclude = ["README.md", "node_modules/"]
+format = "grouped"
+max_line_length = 120
+show_source = true
+
+[tool.flakehell.plugins]
+flake8-bandit = ["+*", "-S322"]
+flake8-bugbear = ["+*"]
+flake8-builtins = ["+*"]
+flake8-comprehensions = ["+*"]
+flake8-darglint = ["+*"]
+flake8-docstrings = ["+*"]
+flake8-eradicate = ["+*"]
+flake8-isort = ["+*"]
+flake8-mutable = ["+*"]
+flake8-pytest-style = ["+*"]
+flake8-spellcheck = ["+*"]
+mccabe = ["+*"]
+pep8-naming = ["+*"]
+pycodestyle = ["+*"]
+pyflakes = ["+*"]
+pylint = ["+*"]
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

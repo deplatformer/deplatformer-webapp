@@ -6,9 +6,7 @@ from datetime import datetime
 import ftfy
 
 
-def activate_hyperlinks(
-    post,
-):
+def activate_hyperlinks(post,):
 
     post_length = len(post)
     post_slice = post
@@ -23,28 +21,17 @@ def activate_hyperlinks(
         if http == -1:
             break
 
-        for i in range(
-            http,
-            slice_length,
-        ):
+        for i in range(http, slice_length,):
             url += post_slice[i]
             if i == slice_length - 1:
                 break
             if post_slice[i + 1] == " ":
                 break
 
-        post = post.replace(
-            url,
-            "<a href='" + url + "'>" + url + "</a>",
-        )
+        post = post.replace(url, "<a href='" + url + "'>" + url + "</a>",)
         url_count += 1
 
-        post_slice = post_slice[
-            slice(
-                i + 1,
-                post_length,
-            )
-        ]
+        post_slice = post_slice[slice(i + 1, post_length,)]
         slice_length = len(post_slice)
 
     return (
@@ -53,9 +40,7 @@ def activate_hyperlinks(
     )
 
 
-def cut_hyperlinks(
-    post,
-):
+def cut_hyperlinks(post,):
 
     post_length = len(post)
     post_slice = post
@@ -69,28 +54,17 @@ def cut_hyperlinks(
         if http == -1:
             break
 
-        for i in range(
-            http,
-            slice_length,
-        ):
+        for i in range(http, slice_length,):
             url += post_slice[i]
             if i == slice_length - 1:
                 break
             if post_slice[i + 1] == " ":
                 break
 
-        post = post.replace(
-            url,
-            "",
-        )
+        post = post.replace(url, "",)
         urls.append(url)
 
-        post_slice = post_slice[
-            slice(
-                i + 1,
-                post_length,
-            )
-        ]
+        post_slice = post_slice[slice(i + 1, post_length,)]
         slice_length = len(post_slice)
 
     return (
@@ -99,9 +73,7 @@ def cut_hyperlinks(
     )
 
 
-def clean_nametags(
-    post,
-):
+def clean_nametags(post,):
 
     post_length = len(post)
     post_slice = post
@@ -116,10 +88,7 @@ def clean_nametags(
         if nametag == -1:
             break
 
-        for i in range(
-            nametag,
-            slice_length,
-        ):
+        for i in range(nametag, slice_length,):
             tagged_name += post_slice[i]
             if i == slice_length - 1:
                 break
@@ -129,46 +98,23 @@ def clean_nametags(
                     tagged_name += post_slice[i + 1]
                     break
 
-        post = post.replace(
-            tagged_name,
-            "",
-        )
+        post = post.replace(tagged_name, "",)
 
-        post_slice = post_slice[
-            slice(
-                i + 2,
-                post_length,
-            )
-        ]
+        post_slice = post_slice[slice(i + 2, post_length,)]
         name_end = post_slice.find("]")
 
-        name = post_slice[
-            slice(
-                0,
-                name_end,
-            )
-        ]
+        name = post_slice[slice(0, name_end,)]
 
-        post = post.replace(
-            name + "]",
-            "<span class='name'>" + name + "</span>",
-        )
+        post = post.replace(name + "]", "<span class='name'>" + name + "</span>",)
 
-        post_slice = post_slice[
-            slice(
-                name_end + 1,
-                post_length,
-            )
-        ]
+        post_slice = post_slice[slice(name_end + 1, post_length,)]
         slice_length = len(post_slice)
         colon_count = 0
 
     return post
 
 
-def posts_to_db(
-    fb_dir,
-):
+def posts_to_db(fb_dir,):
     # Get FB content directory name, use as database name & location
     db_name = os.path.basename(os.path.normpath(fb_dir))
     # Create database if it doesn't exist
@@ -193,8 +139,7 @@ def posts_to_db(
 
     # Add albums with media files first so they can be referenced from posts
     albums_to_db(
-        fb_dir,
-        db_name,
+        fb_dir, db_name,
     )
 
     # FB might include more than one posts JSON file
@@ -230,10 +175,7 @@ def posts_to_db(
 
                 try:
                     attachment_sections = len(content["attachments"])
-                    for i in range(
-                        0,
-                        attachment_sections,
-                    ):
+                    for i in range(0, attachment_sections,):
                         if i == 0:
                             try:
                                 url = content["attachments"][0]["data"][0]["external_context"]["url"]
@@ -271,19 +213,7 @@ def posts_to_db(
                 if timestamp is not None:
                     cursor.executemany(
                         "INSERT INTO posts (timestamp, post, url, url_label, place_name, address, latitude, longitude, profile_update) VALUES (?,?,?,?,?,?,?,?,?)",
-                        [
-                            (
-                                timestamp,
-                                post,
-                                url,
-                                url_label,
-                                place_name,
-                                address,
-                                latitude,
-                                longitude,
-                                profile_update,
-                            )
-                        ],
+                        [(timestamp, post, url, url_label, place_name, address, latitude, longitude, profile_update,)],
                     )
                     db.commit()
 
@@ -295,31 +225,20 @@ def posts_to_db(
                     attachments = content["attachments"][0]["data"]
                     count = len(attachments)
 
-                    for i in range(
-                        0,
-                        count,
-                    ):
+                    for i in range(0, count,):
                         attachment = content["attachments"][0]["data"][i]
-                        for (
-                            key,
-                            value,
-                        ) in attachment.items():
+                        for (key, value,) in attachment.items():
                             if key == "media":
                                 try:
                                     # match filepath to an existing media record
                                     filepath = value["uri"]
                                     cursor.execute(
-                                        "SELECT id FROM media where filepath=?",
-                                        (filepath,),
+                                        "SELECT id FROM media where filepath=?", (filepath,),
                                     )
                                     media_file = cursor.fetchone()
                                     # Update media record with post_id
                                     cursor.execute(
-                                        "UPDATE media SET post_id=? WHERE id=?",
-                                        (
-                                            post_id[0],
-                                            media_file[0],
-                                        ),
+                                        "UPDATE media SET post_id=? WHERE id=?", (post_id[0], media_file[0],),
                                     )
                                     db.commit()
 
@@ -328,17 +247,12 @@ def posts_to_db(
 
                     # Count total number of media files for this post
                     cursor.execute(
-                        "SELECT COUNT(id) FROM media WHERE post_id=?",
-                        (int(post_id[0]),),
+                        "SELECT COUNT(id) FROM media WHERE post_id=?", (int(post_id[0]),),
                     )
                     total_files = cursor.fetchone()
                     # Update post record with number of media files
                     cursor.execute(
-                        "UPDATE posts SET media_files=? WHERE id=?",
-                        (
-                            total_files[0],
-                            post_id[0],
-                        ),
+                        "UPDATE posts SET media_files=? WHERE id=?", (total_files[0], post_id[0],),
                     )
                     db.commit()
 
@@ -361,8 +275,7 @@ def posts_to_db(
             # Check whether the update is linked to a media file, if not, loop will continue
             filepath = update["attachments"][0]["data"][0]["media"]["uri"]
             cursor.execute(
-                "SELECT id, post_id, timestamp, description FROM media where filepath=?",
-                (filepath,),
+                "SELECT id, post_id, timestamp, description FROM media where filepath=?", (filepath,),
             )
             media_file = cursor.fetchone()
             if media_file[0] == None:
@@ -387,14 +300,7 @@ def posts_to_db(
             # Save profile update as post
             cursor.executemany(
                 "INSERT INTO posts (timestamp, post, media_files, profile_update) VALUES (?,?,?,?)",
-                [
-                    (
-                        timestamp,
-                        title,
-                        1,
-                        True,
-                    )
-                ],
+                [(timestamp, title, 1, True,)],
             )
             db.commit()
 
@@ -406,22 +312,13 @@ def posts_to_db(
                 if new_media == False:
                     # Update existing media record with post_id
                     cursor.execute(
-                        "UPDATE media SET post_id=? WHERE id=?",
-                        (
-                            post_id[0],
-                            media_file[0],
-                        ),
+                        "UPDATE media SET post_id=? WHERE id=?", (post_id[0], media_file[0],),
                     )
                 else:
                     # Create new media record to link post to. Don't duplicate the album link.
                     cursor.execute(
                         "INSERT INTO media (timestamp, description, filepath, post_id) VALUES (?,?,?,?)",
-                        (
-                            media_file[2],
-                            media_file[3],
-                            filepath,
-                            post_id[0],
-                        ),
+                        (media_file[2], media_file[3], filepath, post_id[0],),
                     )
                 db.commit()
             except Exception as e:
@@ -461,8 +358,7 @@ def posts_to_db(
 
 
 def albums_to_db(
-    fb_dir,
-    db_name,
+    fb_dir, db_name,
 ):
     # intiliaze database
     db = sqlite3.connect(fb_dir + "/" + db_name + ".sqlite")
@@ -493,14 +389,7 @@ def albums_to_db(
             # Save album info
             cursor.executemany(
                 "INSERT INTO albums (last_modified, name, description, cover_photo_id) VALUES (?,?,?,?)",
-                [
-                    (
-                        last_modified,
-                        name,
-                        description,
-                        cover_photo,
-                    )
-                ],
+                [(last_modified, name, description, cover_photo,)],
             )
             db.commit()
 
@@ -545,40 +434,25 @@ def albums_to_db(
 
                 cursor.executemany(
                     "INSERT INTO media (timestamp, title, description, latitude, longitude, orientation, filepath, post_id, album_id) VALUES (?,?,?,?,?,?,?,?,?)",
-                    [
-                        (
-                            timestamp,
-                            title,
-                            description,
-                            latitude,
-                            longitude,
-                            orientation,
-                            filepath,
-                            None,
-                            album_id[0],
-                        )
-                    ],
+                    [(timestamp, title, description, latitude, longitude, orientation, filepath, None, album_id[0],)],
                 )
                 db.commit()
 
             # Count total number of photos for this album
             cursor.execute(
-                "SELECT COUNT(id) FROM media WHERE album_id=?",
-                (album_id[0],),
+                "SELECT COUNT(id) FROM media WHERE album_id=?", (album_id[0],),
             )
             total_files = cursor.fetchone()
             if (total_files[0] == None) or (total_files[0] == 0):
                 # Delete albums that have zero files
                 cursor.execute(
-                    "DELETE FROM albums WHERE id=?",
-                    (album_id[0],),
+                    "DELETE FROM albums WHERE id=?", (album_id[0],),
                 )
                 db.commit
                 continue
             # Get cover photo id for this album
             cursor.execute(
-                "SELECT id FROM media where filepath=?",
-                (album["cover_photo"]["uri"],),
+                "SELECT id FROM media where filepath=?", (album["cover_photo"]["uri"],),
             )
             cover_photo = cursor.fetchone()
             try:
@@ -588,11 +462,7 @@ def albums_to_db(
             # Update album record with number of photos and cover_photo_id
             cursor.execute(
                 "UPDATE albums SET total_files=?, cover_photo_id=? WHERE id=?",
-                (
-                    total_files[0],
-                    cover_photo_id,
-                    album_id[0],
-                ),
+                (total_files[0], cover_photo_id, album_id[0],),
             )
             db.commit()
 
@@ -600,8 +470,7 @@ def albums_to_db(
     # Save 'your_posts' as an album
     if os.path.isdir(fb_dir + "/photos_and_videos/your_posts/"):
         cursor.execute(
-            "INSERT INTO albums (name) VALUES (?)",
-            ("Your Posts",),
+            "INSERT INTO albums (name) VALUES (?)", ("Your Posts",),
         )
         db.commit()
 
@@ -613,46 +482,33 @@ def albums_to_db(
         for file in files:
             filepath = "photos_and_videos/your_posts/" + file
             cursor.executemany(
-                "INSERT INTO media (filepath, album_id) VALUES (?,?)",
-                [
-                    (
-                        filepath,
-                        album_id[0],
-                    )
-                ],
+                "INSERT INTO media (filepath, album_id) VALUES (?,?)", [(filepath, album_id[0],)],
             )
             db.commit()
 
         # Count total number of photos for this album
         cursor.execute(
-            "SELECT COUNT(id) FROM media WHERE album_id=?",
-            (album_id[0],),
+            "SELECT COUNT(id) FROM media WHERE album_id=?", (album_id[0],),
         )
         total_files = cursor.fetchone()
 
         # Use the first photo as a cover for the album
         cursor.execute(
-            "SELECT id FROM media WHERE album_id=?",
-            (album_id[0],),
+            "SELECT id FROM media WHERE album_id=?", (album_id[0],),
         )
         cover_photo = cursor.fetchone()
 
         # Update album record with number of photos and cover photo
         cursor.execute(
             "UPDATE albums SET total_files=?, cover_photo_id=? WHERE id=?",
-            (
-                total_files[0],
-                cover_photo[0],
-                album_id[0],
-            ),
+            (total_files[0], cover_photo[0], album_id[0],),
         )
         db.commit()
 
     # Include the video directory
     if os.path.isdir(fb_dir + "/photos_and_videos/videos/"):
         cursor.execute(
-            "INSERT INTO albums (name) VALUES (?)",
-            ("Videos",),
+            "INSERT INTO albums (name) VALUES (?)", ("Videos",),
         )
         db.commit()
 
@@ -683,39 +539,26 @@ def albums_to_db(
                     description = None
                 cursor.executemany(
                     "INSERT INTO media (timestamp, description, filepath, album_id) VALUES (?,?,?,?)",
-                    [
-                        (
-                            timestamp,
-                            description,
-                            filepath,
-                            album_id[0],
-                        )
-                    ],
+                    [(timestamp, description, filepath, album_id[0],)],
                 )
                 db.commit()
 
         # Count total number of videos in this album
         cursor.execute(
-            "SELECT COUNT(id) FROM media WHERE album_id=?",
-            (album_id[0],),
+            "SELECT COUNT(id) FROM media WHERE album_id=?", (album_id[0],),
         )
         total_files = cursor.fetchone()
 
         # Use the first video as a cover for the album
         cursor.execute(
-            "SELECT id FROM media WHERE album_id=?",
-            (album_id[0],),
+            "SELECT id FROM media WHERE album_id=?", (album_id[0],),
         )
         cover_video = cursor.fetchone()
 
         # Update album record with number of videos and cover video
         cursor.execute(
             "UPDATE albums SET total_files=?, cover_photo_id=? WHERE id=?",
-            (
-                total_files[0],
-                cover_video[0],
-                album_id[0],
-            ),
+            (total_files[0], cover_video[0], album_id[0],),
         )
         db.commit()
 

@@ -1,6 +1,4 @@
-from deplatformer_webapp import (
-    cli,
-)
+from deplatformer_webapp.app import app
 
 if __name__ == "__main__":
-    cli.run()
+    app.run(debug=app.config["DEBUG"])

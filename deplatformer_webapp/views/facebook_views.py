@@ -7,27 +7,21 @@ from flask import flash, render_template, request
 from flask_user import current_user, login_required
 from werkzeug.utils import secure_filename
 
-from ..app import app
+from ..app import app, db
 from ..helpers.facebook_helpers import clean_nametags, cut_hyperlinks, posts_to_db
 from ..helpers.filecoin_helpers import push_to_filecoin
 from ..helpers.helpers import unzip
+from ..models.user_models import UserDirectories
 
 
 @app.route("/facebook-deplatform")
 @login_required
 def facebook_deplatform():
-    return render_template(
-        "facebook/facebook-deplatform.html",
-        breadcrumb="Facebook / Deplatform",
-    )
+    return render_template("facebook/facebook-deplatform.html", breadcrumb="Facebook / Deplatform",)
 
 
 @app.route(
-    "/facebook-upload",
-    methods=[
-        "GET",
-        "POST",
-    ],
+    "/facebook-upload", methods=["GET", "POST",],
 )
 @login_required
 def facebook_upload():
@@ -47,18 +41,12 @@ def facebook_upload():
             os.makedirs(upload_path)
 
         # Create a subdirectory per username. Usernames are unique.
-        user_dir = os.path.join(
-            upload_path,
-            str(current_user.id) + "-" + current_user.username,
-        )
+        user_dir = os.path.join(upload_path, str(current_user.id) + "-" + current_user.username,)
         if not os.path.exists(user_dir):
             os.makedirs(user_dir)
 
         # Create a Facebook subdirectory.
-        facebook_dir = os.path.join(
-            user_dir,
-            "facebook",
-        )
+        facebook_dir = os.path.join(user_dir, "facebook",)
         if not os.path.exists(facebook_dir):
             os.makedirs(facebook_dir)
         else:
@@ -71,76 +59,36 @@ def facebook_upload():
         file_name = secure_filename(upload.filename)
         print("Saving uploaded file")  # TODO: move to async user output
         try:
-            upload.save(
-                os.path.join(
-                    facebook_dir,
-                    file_name,
-                )
-            )
+            upload.save(os.path.join(facebook_dir, file_name,))
         except:
             # Return if the user did not provide a file to upload
             # TODO: Add flash output to facebook_upload template
             flash(
-                "Please make sure that you've selected a file and that it's in ZIP format.",
-                "alert-danger",
+                "Please make sure that you've selected a file and that it's in ZIP format.", "alert-danger",
             )
             return render_template(
-                "facebook/facebook-upload.html",
-                upload=upload_success,
-                breadcrumb="Facebook / Upload content",
+                "facebook/facebook-upload.html", upload=upload_success, breadcrumb="Facebook / Upload content",
             )
 
         # Unzip the uploaded file
         # TODO: move to background worker task
         print("Extracting zip file")  # TODO: move to async user output
         try:
-            unzip_dir = unzip(
-                os.path.join(
-                    facebook_dir,
-                    file_name,
-                )
-            )
-            try:
-                # Record the location of the user's Facebook content
-                deplatformr_db = sqlite3.connect("deplatformr/" + app.config["SQLALCHEMY_DATABASE_URI"][10:])
-                cursor = deplatformr_db.cursor()
-                cursor.execute(
-                    "SELECT id from user_directories WHERE platform=? AND user_id=?",
-                    [
-                        "facebook",
-                        current_user.id,
-                    ],
-                )
-                directory_id = cursor.fetchone()
-                if directory_id is None:
-                    cursor.execute(
-                        "INSERT INTO user_directories (user_id, platform, directory) VALUES (?,?,?)",
-                        [
-                            current_user.id,
-                            "facebook",
-                            unzip_dir,
-                        ],
-                    )
-                else:
-                    cursor.execute(
-                        "UPDATE user_directories SET directory=? WHERE user_id=?",
-                        [
-                            unzip_dir,
-                            current_user.id,
-                        ],
-                    )
-                deplatformr_db.commit()
-            except Exception as e:
-                print(e)
+            unzip_dir = unzip(os.path.join(facebook_dir, file_name,))
+            directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
+            if directory is None:
+                directory = UserDirectories(user_id=current_user.id, platform="facebook", directory=unzip_dir)
+                db.session.add(directory)
+            else:
+                directory.directory = unzip_dir
+            db.session.commit()
+
         except:
             flash(
-                "Unable to extract zip file.",
-                "alert-danger",
+                "Unable to extract zip file.", "alert-danger",
             )
             return render_template(
-                "facebook/facebook-upload.html",
-                upload=upload_success,
-                breadcrumb="Facebook / Upload content",
+                "facebook/facebook-upload.html", upload=upload_success, breadcrumb="Facebook / Upload content",
             )
 
         # Parse Facebook JSON and save to SQLite
@@ -150,13 +98,7 @@ def facebook_upload():
             print("Parsing Facebook content.")
             # TODO: move to async user output
             print("Saving posts to database.")
-            (
-                total_posts,
-                max_date,
-                min_date,
-                profile_updates,
-                total_media,
-            ) = posts_to_db(unzip_dir)
+            (total_posts, max_date, min_date, profile_updates, total_media,) = posts_to_db(unzip_dir)
             # Output upload stats
             flash(
                 "Saved "
@@ -175,80 +117,54 @@ def facebook_upload():
             upload_success = True
         except Exception as e:
             flash(
-                "Are you sure this is a Facebook zip file? " + str(e),
-                "alert-danger",
+                "Are you sure this is a Facebook zip file? " + str(e), "alert-danger",
             )
             return render_template(
-                "facebook/facebook-upload.html",
-                upload=upload_success,
-                breadcrumb="Facebook / Upload content",
+                "facebook/facebook-upload.html", upload=upload_success, breadcrumb="Facebook / Upload content",
             )
 
         # TODO: ENCRYPT FILES
 
         # Add uploaded and parsed Facebook files to Filecoin
         print("Uploading files to Filecoin")
-        for (
-            path,
-            subdirectory,
-            files,
-        ) in os.walk(unzip_dir):
+        for (path, subdirectory, files,) in os.walk(unzip_dir):
             for file in files:
                 if (file != ".DS_Store") and (file != "thumbs.db") and (file != "desktop.ini") and (file != ".zip"):
                     try:
                         push_to_filecoin(
-                            path,
-                            file,
-                            "facebook",
+                            path, file, "facebook",
                         )
                     except Exception as e:
                         flash(
-                            "Unable to store " + file + " on Filecoin. " + str(e) + ".",
-                            "alert-danger",
+                            "Unable to store " + file + " on Filecoin. " + str(e) + ".", "alert-danger",
                         )
 
         # TODO: DELETE CACHED COPIES OF FILE UPLOADS
 
     return render_template(
-        "facebook/facebook-upload.html",
-        upload=upload_success,
-        breadcrumb="Facebook / Upload content",
+        "facebook/facebook-upload.html", upload=upload_success, breadcrumb="Facebook / Upload content",
     )
 
 
 @app.route("/facebook-view")
 @login_required
 def facebook_view():
-
     day = datetime.now().strftime("%d")
     month_script = datetime.now().strftime("%b")
-
-    deplatformr_db = sqlite3.connect("deplatformr/" + app.config["SQLALCHEMY_DATABASE_URI"][10:])
-    cursor = deplatformr_db.cursor()
-    cursor.execute(
-        "SELECT directory FROM user_directories WHERE user_id = ? AND platform = ?",
-        (
-            current_user.id,
-            "facebook",
-        ),
-    )
-    directory = cursor.fetchone()
+    directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
 
     if directory is None:
         flash(
-            "Facebook data not found.",
-            "alert-danger",
+            "Facebook data not found.", "alert-danger",
         )
         return render_template(
-            "facebook/facebook-view.html",
-            breadcrumb="Facebook / View content",
-            this_day=day,
-            this_month=month_script,
+            "facebook/facebook-view.html", breadcrumb="Facebook / View content", this_day=day, this_month=month_script,
         )
 
-    fb_dir = directory[0]
+    fb_dir = directory.directory
     db_name = os.path.basename(os.path.normpath(fb_dir))
     fb_db = fb_dir + "/" + str(db_name) + ".sqlite"
+
 
     facebook_db = sqlite3.connect(fb_db)
     cursor = facebook_db.cursor()
@@ -256,76 +172,26 @@ def facebook_view():
     albums = cursor.fetchall()
 
     # Sort albums so that Profile Pictures, Cover Photos, and Videos come first
-    for i in range(
-        0,
-        len(albums),
-    ):
-        if "Videos" in albums[i][2]:
-            videos = albums[i]
-            albums.pop(i)
-            albums.insert(
-                0,
-                videos,
-            )
-            break
-    for i in range(
-        0,
-        len(albums),
-    ):
-        if "Cover Photos" in albums[i][2]:
-            covers = albums[i]
-            albums.pop(i)
-            albums.insert(
-                0,
-                covers,
-            )
-            break
-    for i in range(
-        0,
-        len(albums),
-    ):
-        if "Profile Pictures" in albums[i][2]:
-            profiles = albums[i]
-            albums.pop(i)
-            albums.insert(
-                0,
-                profiles,
-            )
-            break
-
+    albums_dict = {album[2]: album for album in albums}
+    sorted_albums = [albums_dict[c] for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
     return render_template(
         "facebook/facebook-view.html",
         breadcrumb="Facebook / View content",
         this_day=day,
         this_month=month_script,
-        albums=albums,
+        albums=sorted_albums,
     )
 
 
 @app.route("/facebook-memories")
 @login_required
 def facebook_memories():
-
-    deplatformr_db = sqlite3.connect("deplatformr/" + app.config["SQLALCHEMY_DATABASE_URI"][10:])
-    cursor = deplatformr_db.cursor()
-    cursor.execute(
-        "SELECT directory FROM user_directories WHERE user_id = ? AND platform = ?",
-        (
-            current_user.id,
-            "facebook",
-        ),
-    )
-    directory = cursor.fetchone()
-
+    directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
     if directory is None:
         flash(
-            "Facebook data not found.",
-            "alert-danger",
+            "Facebook data not found.", "alert-danger",
         )
-        return render_template(
-            "facebook/facebook-memories.html",
-            breadcrumb="Facebook / View content / Memories",
-        )
+        return render_template("facebook/facebook-memories.html", breadcrumb="Facebook / View content / Memories",)
 
     fb_dir = directory[0]
     db_name = os.path.basename(os.path.normpath(fb_dir))
@@ -343,18 +209,12 @@ def facebook_memories():
         # Prime for demo response
         cursor.execute(
             "SELECT * FROM posts WHERE strftime('%m', timestamp) = ? AND strftime('%d', timestamp) = ? ORDER BY timestamp ASC",
-            (
-                "08",
-                "02",
-            ),
+            ("08", "02",),
         )
     else:
         cursor.execute(
             "SELECT * FROM posts WHERE strftime('%m', timestamp) = ? AND strftime('%d', timestamp) = ? ORDER BY timestamp ASC",
-            (
-                month,
-                day,
-            ),
+            (month, day,),
         )
     posts = cursor.fetchall()
 
@@ -370,17 +230,13 @@ def facebook_memories():
                 clean_post_names = clean_nametags(post[2])
                 # TODO: figure out how to activate post hyperlinks within the post text
                 # parsed_post, url_count = activate_hyperlinks(clean_post_names)
-                (
-                    parsed_post,
-                    urls,
-                ) = cut_hyperlinks(clean_post_names)
+                (parsed_post, urls,) = cut_hyperlinks(clean_post_names)
             else:
                 parsed_post = None
                 urls = None
 
             cursor.execute(
-                "SELECT * FROM media WHERE post_id = ?",
-                (post[0],),
+                "SELECT * FROM media WHERE post_id = ?", (post[0],),
             )
             media = cursor.fetchall()
 
@@ -389,10 +245,7 @@ def facebook_memories():
                 if file[3] is not None:
                     if file[3] != post[2]:
                         clean_post_names = clean_nametags(file[3])
-                        (
-                            file_parsed_post,
-                            file_urls,
-                        ) = cut_hyperlinks(clean_post_names)
+                        (file_parsed_post, file_urls,) = cut_hyperlinks(clean_post_names)
                     else:
                         file_parsed_post = None
                         file_urls = None
@@ -407,15 +260,7 @@ def facebook_memories():
                     mimetype = "video"
                 else:
                     mimetype = "image"
-                files.update(
-                    {
-                        file[0]: {
-                            "file_post": file_parsed_post,
-                            "urls": file_urls,
-                            "mimetype": mimetype,
-                        }
-                    }
-                )
+                files.update({file[0]: {"file_post": file_parsed_post, "urls": file_urls, "mimetype": mimetype,}})
                 # reset parsed_post so that it's not re-used for entries that don't have a file[3]
                 file_parsed_post = None
                 file_urls = None
@@ -449,10 +294,7 @@ def facebook_memories():
                     clean_post_names = clean_nametags(post[2])
                     # TODO: figure out how to activate post hyperlinks within the post text
                     # parsed_post, url_count = activate_hyperlinks(clean_post_names)
-                    (
-                        parsed_post,
-                        urls,
-                    ) = cut_hyperlinks(clean_post_names)
+                    (parsed_post, urls,) = cut_hyperlinks(clean_post_names)
 
                 if post[4] is not None and len(urls) == 0:
                     urls = []
@@ -485,60 +327,36 @@ def facebook_memories():
 
 @app.route("/facebook-album/<album_id>")
 @login_required
-def facebook_album(
-    album_id,
-):
-
-    deplatformr_db = sqlite3.connect("deplatformr/" + app.config["SQLALCHEMY_DATABASE_URI"][10:])
-    cursor = deplatformr_db.cursor()
-    cursor.execute(
-        "SELECT directory FROM user_directories WHERE user_id = ? AND platform = ?",
-        (
-            current_user.id,
-            "facebook",
-        ),
-    )
-    directory = cursor.fetchone()
-
+def facebook_album(album_id,):
+    directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
     if directory is None:
         flash(
-            "Facebook data not found.",
-            "alert-danger",
+            "Facebook data not found.", "alert-danger",
         )
-        return render_template(
-            "facebook/facebook-view.html",
-            breadcrumb="Facebook / View content ",
-        )
+        return render_template("facebook/facebook-view.html", breadcrumb="Facebook / View content ",)
 
-    fb_dir = directory[0]
+    fb_dir = directory.directory
     db_name = os.path.basename(os.path.normpath(fb_dir))
     fb_db = fb_dir + "/" + str(db_name) + ".sqlite"
 
     facebook_db = sqlite3.connect(fb_db)
     cursor = facebook_db.cursor()
     cursor.execute(
-        "SELECT * FROM media WHERE album_id = ? ORDER BY timestamp DESC",
-        (album_id,),
+        "SELECT * FROM media WHERE album_id = ? ORDER BY timestamp DESC", (album_id,),
     )
     files = cursor.fetchall()
     cursor.execute(
-        "SELECT * FROM albums WHERE id = ?",
-        (album_id,),
+        "SELECT * FROM albums WHERE id = ?", (album_id,),
     )
     album = cursor.fetchone()
 
     return render_template(
-        "facebook/facebook-album.html",
-        breadcrumb="Facebook / View content / Albums",
-        files=files,
-        album=album,
+        "facebook/facebook-album.html", breadcrumb="Facebook / View content / Albums", files=files, album=album,
     )
 
 
 @app.route("/facebook-manage")
 @login_required
 def facebook_manage():
-    return render_template(
-        "facebook/facebook-manage.html",
-        breadcrumb="Facebook / Manage content",
-    )
+    return render_template("facebook/facebook-manage.html", breadcrumb="Facebook / Manage content",)
+

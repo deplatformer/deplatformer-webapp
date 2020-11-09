@@ -5,51 +5,34 @@ from flask import render_template, send_from_directory
 from flask_user import current_user, login_required
 
 from ..app import app
+from ..models.user_models import UserDirectories
 
 
 @app.route("/")
 @login_required
 def homepage():
-    return render_template(
-        "homepage.html",
-        breadcrumb="Home",
-    )
+    return render_template("homepage.html", breadcrumb="Home",)
 
 
 @app.route(
-    "/userfile/<platform>/<file_id>",
-    methods=["GET"],
+    "/userfile/<platform>/<file_id>", methods=["GET"],
 )
 @login_required
 def userfile(
-    platform,
-    file_id,
+    platform, file_id,
 ):
-
-    try:
-        deplatformr_db = sqlite3.connect("deplatformr/" + app.config["SQLALCHEMY_DATABASE_URI"][10:])
-        cursor = deplatformr_db.cursor()
-        cursor.execute(
-            "SELECT directory FROM user_directories WHERE user_id = ? AND platform = ?",
-            (
-                current_user.id,
-                platform,
-            ),
-        )
-        directory = cursor.fetchone()
-    except:
+    directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
+    if directory is None:
         return "File not found."
 
     try:
-        platform_dir = directory[0]
+        platform_dir = directory.directory
         platform_db_name = os.path.basename(os.path.normpath(platform_dir))
         platform_db = platform_dir + "/" + str(platform_db_name) + ".sqlite"
-        id = int(file_id)
         db = sqlite3.connect(platform_db)
         cursor = db.cursor()
         cursor.execute(
-            "SELECT filepath FROM media WHERE id = ?",
-            (id,),
+            "SELECT filepath FROM media WHERE id = ?", (int(file_id),),
         )
         filepath = cursor.fetchone()
     except Exception as e:
@@ -58,36 +41,23 @@ def userfile(
 
     split = os.path.split(filepath[0])
     filename = split[1]
-    fullpath = app.config["BASEDIR"] + "/" + directory[0] + "/" + split[0] + "/"
-
-    return send_from_directory(
-        fullpath,
-        filename,
-    )
+    fullpath = app.config["BASEDIR"] + "/../" + directory.directory + "/" + split[0] + "/"
+    return send_from_directory(fullpath, filename)
 
 
 @app.route("/instagram")
 @login_required
 def instagram():
-    return render_template(
-        "instagram/instagram.html",
-        breadcrumb="Instagram",
-    )
+    return render_template("instagram/instagram.html", breadcrumb="Instagram",)
 
 
 @app.route("/icloud")
 @login_required
 def icloud():
-    return render_template(
-        "icloud/icloud.html",
-        breadcrumb="iCloud",
-    )
+    return render_template("icloud/icloud.html", breadcrumb="iCloud",)
 
 
 @app.route("/google")
 @login_required
 def google():
-    return render_template(
-        "google/google.html",
-        breadcrumb="Google",
-    )
+    return render_template("google/google.html", breadcrumb="Google",)

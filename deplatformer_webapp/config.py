@@ -8,14 +8,8 @@ import os
 class Config:
     """Parent configuration class."""
 
-    ENV = os.getenv(
-        "FLASK_ENV",
-        "local",
-    )
-    DEBUG = os.getenv(
-        "FLASK_DEBUG",
-        True,
-    )
+    ENV = os.getenv("FLASK_ENV", "local",)
+    DEBUG = os.getenv("FLASK_DEBUG", True,)
 
     APPLICATION_ROOT = "/"
 
@@ -29,10 +23,7 @@ class Config:
     SECRET_KEY = "3d488586-35ec-4706-ab35-cb46e59f11b6"
 
     # Powergate address
-    POWERGATE_ADDRESS = os.getenv(
-        "DEPLATFORMER_POWERGATE_ADDR",
-        "127.0.0.1:5002",
-    )
+    POWERGATE_ADDRESS = os.getenv("DEPLATFORMER_POWERGATE_ADDR", "127.0.0.1:5002",)
 
     # Flask-SQLAlchemy settings
     # File-based SQL database
@@ -59,25 +50,20 @@ class Config:
 
 
 class LocalConfig(Config):
-    ENV = os.getenv(
-        "FLASK_ENV",
-        "local",
-    )
-    DEBUG = os.getenv(
-        "FLASK_DEBUG",
-        True,
-    )
+    ENV = os.getenv("FLASK_ENV", "local",)
+    DEBUG = os.getenv("FLASK_DEBUG", True,)
 
 
 class DevelopmentConfig(Config):
-    ENV = os.getenv(
-        "FLASK_ENV",
-        "dev",
-    )
-    DEBUG = os.getenv(
-        "FLASK_DEBUG",
-        True,
-    )
+    ENV = os.getenv("FLASK_ENV", "dev",)
+    DEBUG = os.getenv("FLASK_DEBUG", True,)
+
+    DB_URL = os.getenv("DB_URL")
+    DB_NAME = os.getenv("DB_NAME")
+    DB_USERNAME = os.getenv("DB_USERNAME")
+    DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+    SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_URL}/{DB_NAME}"
 
 
 app_config = {

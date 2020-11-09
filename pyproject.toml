@@ -45,6 +45,8 @@ wrapt = "1.12.1"
 WTForms = "2.3.3"
 poetry-version = "^0.1.5"
 Flask-Migrate = "^2.5.3"
+psycopg2 = "2.7.7"
+python-dotenv = "^0.15.0"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
@@ -58,6 +60,7 @@ flakehell = "^0.7.0"
 deplatformer = 'deplatformer_webapp.cli:cli'
 format = 'deplatformer_webapp.scripts:format'
 lint = 'deplatformer_webapp.scripts:lint'
+dropdb = 'deplatformer_webapp.scripts:dropdb'
 
 [tool.black]
 line-length = 120

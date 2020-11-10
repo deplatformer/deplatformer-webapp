@@ -1,5 +1,7 @@
-import docker
 import atexit
+
+import docker
+
 
 def run_docker_ipfs_daemon(staging_dir, data_dir):
     client = docker.from_env()
@@ -13,8 +15,10 @@ def run_docker_ipfs_daemon(staging_dir, data_dir):
         tty=True,
     )
 
+
 def register_ipfs_daemon_exit_handler(ipfs_container):
     def container_exit():
         print("Gracefully closing IPFS daemon...")
         ipfs_container.stop()
+
     atexit.register(container_exit)

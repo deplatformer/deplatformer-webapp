@@ -21,14 +21,24 @@ def create_ffs():
     ffs = powergate.ffs.create()
     creation_date = datetime.now().replace(microsecond=0)
     # TODO salt token id
-    filecoin_file_system = Ffs(ffs_id=ffs.id, token=ffs.token, creation_date=creation_date, user_id=current_user.id,)
+    filecoin_file_system = Ffs(
+        ffs_id=ffs.id,
+        token=ffs.token,
+        creation_date=creation_date,
+        user_id=current_user.id,
+    )
     db.session.add(filecoin_file_system)
 
     # Create new FFS wallet and add entry in log table
     address = powergate.ffs.addrs_list(ffs.token)
     obj = MessageToDict(address)
     wallet = obj["addrs"][0]["addr"]
-    wallet = Wallets(created=creation_date, address=wallet, ffs=ffs.id, user_id=current_user.id,)
+    wallet = Wallets(
+        created=creation_date,
+        address=wallet,
+        ffs=ffs.id,
+        user_id=current_user.id,
+    )
     db.session.add(wallet)
     db.session.commit()
 
@@ -38,7 +48,9 @@ def create_ffs():
 
 
 def push_to_filecoin(
-    upload_path, file_name, platform,
+    upload_path,
+    file_name,
+    platform,
 ):
 
     # Push file to Filecoin via Powergate
@@ -53,19 +65,33 @@ def push_to_filecoin(
 
     try:
         # Create an iterator of the uploaded file using the helper function
-        file_iterator = get_file_bytes(os.path.join(upload_path, file_name,))
+        file_iterator = get_file_bytes(
+            os.path.join(
+                upload_path,
+                file_name,
+            )
+        )
 
         # Convert the iterator into request and then add to the hot set (IPFS)
-        file_hash = powergate.ffs.stage(bytes_to_chunks(file_iterator), ffs.token,)
+        file_hash = powergate.ffs.stage(
+            bytes_to_chunks(file_iterator),
+            ffs.token,
+        )
 
         # Push the file to Filecoin
         powergate.ffs.push(
-            file_hash.cid, ffs.token,
+            file_hash.cid,
+            ffs.token,
         )
 
         # Note the upload date and file size
         upload_date = datetime.now().replace(microsecond=0)
-        file_size = os.path.getsize(os.path.join(upload_path, file_name,))
+        file_size = os.path.getsize(
+            os.path.join(
+                upload_path,
+                file_name,
+            )
+        )
 
         # Save file information to database
         file_upload = Files(
@@ -85,7 +111,11 @@ def push_to_filecoin(
     except Exception as e:
         # Output error message if pushing to Filecoin fails
         flash(
-            "'{}' failed to upload to Filecoin. {}.".format(file_name, e,), "alert-danger",
+            "'{}' failed to upload to Filecoin. {}.".format(
+                file_name,
+                e,
+            ),
+            "alert-danger",
         )
 
         # Update log table with error

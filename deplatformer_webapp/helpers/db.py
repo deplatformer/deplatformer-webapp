@@ -1,4 +1,5 @@
-from ..app import app,db 
+from ..app import app, db
+
 
 def get_collation_by_engine():
     with app.app_context():

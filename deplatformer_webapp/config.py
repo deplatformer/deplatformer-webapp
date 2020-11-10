@@ -8,8 +8,14 @@ import os
 class Config:
     """Parent configuration class."""
 
-    ENV = os.getenv("FLASK_ENV", "local",)
-    DEBUG = os.getenv("FLASK_DEBUG", True,)
+    ENV = os.getenv(
+        "FLASK_ENV",
+        "local",
+    )
+    DEBUG = os.getenv(
+        "FLASK_DEBUG",
+        True,
+    )
 
     APPLICATION_ROOT = "/"
 
@@ -23,15 +29,18 @@ class Config:
     SECRET_KEY = "3d488586-35ec-4706-ab35-cb46e59f11b6"
 
     # Powergate address
-    POWERGATE_ADDRESS = os.getenv("DEPLATFORMER_POWERGATE_ADDR", "127.0.0.1:5002",)
+    POWERGATE_ADDRESS = os.getenv(
+        "DEPLATFORMER_POWERGATE_ADDR",
+        "127.0.0.1:5002",
+    )
 
     # Flask-SQLAlchemy settings
     # File-based SQL database
     SQLALCHEMY_DATABASE_URI = "sqlite:///deplatformr.sqlite"
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # Avoids SQLAlchemy warning
 
-    IPFS_STAGING_DIR= os.path.join(BASEDIR, ".ipfs-staging")
-    IPFS_DATA_DIR= os.path.join(BASEDIR, ".ipfs-data")
+    IPFS_STAGING_DIR = os.path.join(BASEDIR, ".ipfs-staging")
+    IPFS_DATA_DIR = os.path.join(BASEDIR, ".ipfs-data")
 
     # Flask-User settings
     # See https://flask-user.readthedocs.io/en/latest/configuring_settings.html
@@ -53,13 +62,25 @@ class Config:
 
 
 class LocalConfig(Config):
-    ENV = os.getenv("FLASK_ENV", "local",)
-    DEBUG = os.getenv("FLASK_DEBUG", True,)
+    ENV = os.getenv(
+        "FLASK_ENV",
+        "local",
+    )
+    DEBUG = os.getenv(
+        "FLASK_DEBUG",
+        True,
+    )
 
 
 class DevelopmentConfig(Config):
-    ENV = os.getenv("FLASK_ENV", "dev",)
-    DEBUG = os.getenv("FLASK_DEBUG", True,)
+    ENV = os.getenv(
+        "FLASK_ENV",
+        "dev",
+    )
+    DEBUG = os.getenv(
+        "FLASK_DEBUG",
+        True,
+    )
 
     DB_URL = os.getenv("DB_URL")
     DB_NAME = os.getenv("DB_NAME")

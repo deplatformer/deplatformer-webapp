@@ -5,7 +5,8 @@ from subprocess import CalledProcessError, check_call
 
 def format() -> None:
     check_call(
-        ["isort deplatformer_webapp tests && black ."], shell=True,
+        ["isort deplatformer_webapp tests && black ."],
+        shell=True,
     )
 
 

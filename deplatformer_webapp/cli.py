@@ -3,7 +3,7 @@ from pathlib import Path  # Python 3.6+ only
 import click
 from click.decorators import pass_context
 from dotenv import load_dotenv
-from flask_migrate import upgrade, migrate
+from flask_migrate import migrate, upgrade
 
 from . import __version__
 from .helpers import is_docker_running
@@ -12,7 +12,8 @@ from .helpers.ipfs import register_ipfs_daemon_exit_handler, run_docker_ipfs_dae
 
 @click.group()
 @click.option(
-    "--env-file", help="Environment file to use",
+    "--env-file",
+    help="Environment file to use",
 )
 @pass_context
 def cli(ctx, env_file):
@@ -26,13 +27,18 @@ def cli(ctx, env_file):
 
 @cli.command()
 @click.option(
-    "--host", default="0.0.0.0", help="Host to run the application on",
+    "--host",
+    default="0.0.0.0",
+    help="Host to run the application on",
 )
 @click.option(
-    "--port", default=5000, help="Port to run the application on",
+    "--port",
+    default=5000,
+    help="Port to run the application on",
 )
 @click.option("--debug", is_flag=True)
-def run(host, port, debug):
+@pass_context
+def run(ctx, host, port, debug):
     """Launches the app"""
     if not is_docker_running():
         print("Coulnd't initiate IPFS daemon. Are you sure you have docker daemon installed and running?")
@@ -43,8 +49,12 @@ def run(host, port, debug):
     ipfs_container = run_docker_ipfs_daemon(app.config["IPFS_STAGING_DIR"], app.config["IPFS_STAGING_DIR"])
     register_ipfs_daemon_exit_handler(ipfs_container)
     
+    ctx.invoke(migratedb)
+
     app.run(
-        debug=debug, host=host, port=port,
+        debug=debug,
+        host=host,
+        port=port,
     )
 
 

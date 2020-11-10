@@ -11,15 +11,20 @@ from ..models.user_models import UserDirectories
 @app.route("/")
 @login_required
 def homepage():
-    return render_template("homepage.html", breadcrumb="Home",)
+    return render_template(
+        "homepage.html",
+        breadcrumb="Home",
+    )
 
 
 @app.route(
-    "/userfile/<platform>/<file_id>", methods=["GET"],
+    "/userfile/<platform>/<file_id>",
+    methods=["GET"],
 )
 @login_required
 def userfile(
-    platform, file_id,
+    platform,
+    file_id,
 ):
     directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
     if directory is None:
@@ -32,7 +37,8 @@ def userfile(
         db = sqlite3.connect(platform_db)
         cursor = db.cursor()
         cursor.execute(
-            "SELECT filepath FROM media WHERE id = ?", (int(file_id),),
+            "SELECT filepath FROM media WHERE id = ?",
+            (int(file_id),),
         )
         filepath = cursor.fetchone()
     except Exception as e:
@@ -48,16 +54,25 @@ def userfile(
 @app.route("/instagram")
 @login_required
 def instagram():
-    return render_template("instagram/instagram.html", breadcrumb="Instagram",)
+    return render_template(
+        "instagram/instagram.html",
+        breadcrumb="Instagram",
+    )
 
 
 @app.route("/icloud")
 @login_required
 def icloud():
-    return render_template("icloud/icloud.html", breadcrumb="iCloud",)
+    return render_template(
+        "icloud/icloud.html",
+        breadcrumb="iCloud",
+    )
 
 
 @app.route("/google")
 @login_required
 def google():
-    return render_template("google/google.html", breadcrumb="Google",)
+    return render_template(
+        "google/google.html",
+        breadcrumb="Google",
+    )

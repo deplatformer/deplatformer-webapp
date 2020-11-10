@@ -30,6 +30,9 @@ class Config:
     SQLALCHEMY_DATABASE_URI = "sqlite:///deplatformr.sqlite"
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # Avoids SQLAlchemy warning
 
+    IPFS_STAGING_DIR= os.path.join(BASEDIR, ".ipfs-staging")
+    IPFS_DATA_DIR= os.path.join(BASEDIR, ".ipfs-data")
+
     # Flask-User settings
     # See https://flask-user.readthedocs.io/en/latest/configuring_settings.html
     # Shown in and email templates and page footers

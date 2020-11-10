@@ -73,3 +73,7 @@ _meta
 .serverless
 .serverless-wsgi
 .dev-env
+
+# Embedded IPFS
+.ipfs-staging
+.ipfs-data

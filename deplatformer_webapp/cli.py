@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from flask_migrate import upgrade, migrate
 
 from . import __version__
+from .helpers import is_docker_running
+from .helpers.ipfs import register_ipfs_daemon_exit_handler, run_docker_ipfs_daemon
 
 
 @click.group()
@@ -29,12 +31,18 @@ def cli(ctx, env_file):
 @click.option(
     "--port", default=5000, help="Port to run the application on",
 )
-@click.option(
-    "--debug", is_flag=True
-)
+@click.option("--debug", is_flag=True)
 def run(host, port, debug):
     """Launches the app"""
+    if not is_docker_running():
+        print("Coulnd't initiate IPFS daemon. Are you sure you have docker daemon installed and running?")
+        exit(1)
+
     from .app import app
+
+    ipfs_container = run_docker_ipfs_daemon(app.config["IPFS_STAGING_DIR"], app.config["IPFS_STAGING_DIR"])
+    register_ipfs_daemon_exit_handler(ipfs_container)
+    
     app.run(
         debug=debug, host=host, port=port,
     )
@@ -54,6 +62,7 @@ def migratedb():
     with app.app_context():
         upgrade(directory="migrations/{0}".format(app.config["ENV"]))
 
+
 @cli.command()
 def dropdb():
     """Removes everything from the database. Use with CAUTION!"""
@@ -61,6 +70,7 @@ def dropdb():
 
     with app.app_context():
         db.drop_all()
+
 
 @cli.command()
 def makemigrations():

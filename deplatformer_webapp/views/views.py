@@ -47,7 +47,7 @@ def userfile(
 
     split = os.path.split(filepath[0])
     filename = split[1]
-    fullpath = app.config["BASEDIR"] + "/../" + directory.directory + "/" + split[0] + "/"
+    fullpath = os.path.join(app.config["USER_DATA_DIR"], directory.directory, split[0])
     return send_from_directory(fullpath, filename)
 
 

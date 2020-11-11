@@ -3,6 +3,7 @@ Configuration for Deplatformer WebApp
 """
 import logging
 import os
+import platform
 
 
 class Config:
@@ -22,25 +23,37 @@ class Config:
     APP_LOG_LEVEL = logging.INFO
     LOG_FORMAT = "[%(asctime)s] %(levelname)s in %(filename)s:%(lineno)d " "%(message)s"
 
-    BASEDIR = os.path.abspath(os.path.dirname(__file__))
-    USER_DATA_DIR = "_user_data/"
+    
 
     # Flask settings
     SECRET_KEY = "3d488586-35ec-4706-ab35-cb46e59f11b6"
 
     # Powergate address
     POWERGATE_ADDRESS = os.getenv(
-        "DEPLATFORMER_POWERGATE_ADDR",
+        "POWERGATE_ADDR",
         "127.0.0.1:5002",
     )
 
+    # Directories to store Deplatformer's data
+    BASEDIR = os.path.abspath(os.path.dirname(__file__))
+    DATA_DIR = os.getenv(
+        "DATA_DIR",
+        os.path.join(os.getenv("APPDATA"), "Deplatformer") if platform.system() == "Windows" else os.path.expanduser("~/.deplatformer")
+    )
+    USER_DATA_DIR = os.path.join(DATA_DIR, "_user_data")
+
     # Flask-SQLAlchemy settings
     # File-based SQL database
-    SQLALCHEMY_DATABASE_URI = "sqlite:///deplatformr.sqlite"
+    SQLITE_DB = os.path.join(DATA_DIR, "deplatformr.sqlite")
+    SQLALCHEMY_DATABASE_URI = f"sqlite:////{SQLITE_DB}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # Avoids SQLAlchemy warning
 
-    IPFS_STAGING_DIR = os.path.join(BASEDIR, ".ipfs-staging")
-    IPFS_DATA_DIR = os.path.join(BASEDIR, ".ipfs-data")
+    IPFS_STAGING_DIR = os.path.join(DATA_DIR, ".ipfs-staging")
+    IPFS_DATA_DIR = os.path.join(DATA_DIR, ".ipfs-data")
+    IPFS_URI = os.getenv(
+        "IPFS_URI",
+        "/dns/localhost/tcp/5001/http",
+    )
 
     # Flask-User settings
     # See https://flask-user.readthedocs.io/en/latest/configuring_settings.html
@@ -81,13 +94,6 @@ class DevelopmentConfig(Config):
         "FLASK_DEBUG",
         True,
     )
-
-    DB_URL = os.getenv("DB_URL")
-    DB_NAME = os.getenv("DB_NAME")
-    DB_USERNAME = os.getenv("DB_USERNAME")
-    DB_PASSWORD = os.getenv("DB_PASSWORD")
-
-    SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_URL}/{DB_NAME}"
 
 
 app_config = {

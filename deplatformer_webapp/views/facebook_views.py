@@ -12,6 +12,7 @@ from ..helpers import unzip
 from ..helpers.facebook_helpers import clean_nametags, cut_hyperlinks, posts_to_db
 from ..helpers.filecoin_helpers import push_to_filecoin
 from ..models.user_models import UserDirectories
+from ..services.ipfs import IPFSService
 
 
 @app.route("/facebook-deplatform")
@@ -162,6 +163,10 @@ def facebook_upload():
             )
 
         # TODO: ENCRYPT FILES
+
+        # Pin files to IPFS
+        ipfs_service = IPFSService(ipfs_uri=app.config["IPFS_URI"])
+        pins = ipfs_service.pin_dir(unzip_dir)
 
         # Add uploaded and parsed Facebook files to Filecoin
         print("Uploading files to Filecoin")

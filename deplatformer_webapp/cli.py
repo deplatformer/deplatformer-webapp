@@ -1,3 +1,4 @@
+import os
 from pathlib import Path  # Python 3.6+ only
 
 import click
@@ -48,7 +49,7 @@ def run(ctx, host, port, debug):
 
     ipfs_container = run_docker_ipfs_daemon(app.config["IPFS_STAGING_DIR"], app.config["IPFS_STAGING_DIR"])
     register_ipfs_daemon_exit_handler(ipfs_container)
-    
+
     ctx.invoke(migratedb)
 
     app.run(
@@ -70,16 +71,17 @@ def migratedb():
     from .app import app
 
     with app.app_context():
-        upgrade(directory="migrations/{0}".format(app.config["ENV"]))
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        upgrade(directory=os.path.join(cwd, "migrations"))
 
 
 @cli.command()
-def dropdb():
-    """Removes everything from the database. Use with CAUTION!"""
-    from .app import app, db
+def deletedb():
+    """Deletes db file"""
+    from .app import app
 
-    with app.app_context():
-        db.drop_all()
+    os.remove(os.path.join(app.config["BASEDIR"], app.config["SQLITE_DB"]))
+    click.echo(f"Database deleted successfully!")
 
 
 @cli.command()

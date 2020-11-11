@@ -1,12 +1,37 @@
 [tool.poetry]
 name = "deplatformer-webapp"
-version = "0.1.0"
+version = "0.1.7"
 description = "Flask webapp for the deplatformer platform"
 authors = ["Deplatformer Team <info@deplatformer.io>"]
+maintainers = ["Antreas Pogiatzis <antreas@deplatformer.io>"]
 license = "MIT"
+readme = "README.md"
+homepage = "https://deplatformer.io"
+repository = "https://github.com/deplatformer/deplatformer-webapp"
+keywords = [
+    "Filecoin",
+    "IPFS",
+    "web3",
+    "Deplatformer"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Flake8",
+    "Framework :: Flask",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Communications :: File Sharing",
+    "Topic :: Internet",
+    "Topic :: Multimedia",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+include = ["deplatformer_webapp/migrations/*"]
+exclude = [".DS_Store"]
+
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.7.2"
 bcrypt = "3.2.0"
 blinker = "1.4"
 cffi = "1.14.2"
@@ -21,16 +46,17 @@ Flask-Login = "0.5.0"
 Flask-Mail = "0.9.1"
 Flask-SocketIO = "4.3.1"
 Flask-SQLAlchemy = "2.4.4"
-Flask-User = "1.0.2.2"
+Flask-User = "^1.0.2"
 Flask-WTF = "0.14.3"
 ftfy = "5.8"
 greenlet = "0.4.16"
 grpcio = "1.30.0"
-idna = "2.10"
+idna = "^2.10"
 itsdangerous = "1.1.0"
 Jinja2 = "2.11.2"
 MarkupSafe = "1.1.1"
 monotonic = "1.5"
+urllib3= "1.25.11"
 passlib = "1.7.2"
 protobuf = "3.12.4"
 pycparser = "2.20"
@@ -45,7 +71,6 @@ wrapt = "1.12.1"
 WTForms = "2.3.3"
 poetry-version = "^0.1.5"
 Flask-Migrate = "^2.5.3"
-psycopg2 = "2.7.7"
 python-dotenv = "^0.15.0"
 docker = "^4.3.1"
 

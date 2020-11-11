@@ -2,6 +2,7 @@ import os
 from zipfile import ZipFile
 
 import docker
+import pip
 
 
 def is_docker_running():
@@ -37,3 +38,14 @@ def unzip(
     except Exception as e:
         print("Not a valid zip file or location.")
         print(e)
+
+
+def import_or_install(package):
+    try:
+        return __import__(package)
+    except ImportError:
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        wheel_path = os.path.join(cwd, "../lib/ipfshttpclient-0.7.0a1-py3-none-any.whl")
+        pip.main(["install", wheel_path])
+    finally:
+        return __import__(package)

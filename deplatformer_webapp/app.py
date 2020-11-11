@@ -28,6 +28,8 @@ def create_app():
     )
     app.config.from_object(config_class)
 
+    os.makedirs(app.config["DATA_DIR"],exist_ok=True)
+
     db.init_app(app)
     migrate.init_app(
         app,

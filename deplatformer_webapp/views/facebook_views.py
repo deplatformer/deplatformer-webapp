@@ -1,18 +1,18 @@
 import os
-import shutil
 import sqlite3
+import zipfile
 from datetime import datetime
 
 from flask import flash, render_template, request
 from flask_user import current_user, login_required
-from werkzeug.utils import secure_filename
+from pygate_grpc.exceptions import GRPCNotAvailableException
 
 from ..app import app, db
 from ..helpers import unzip
-from ..helpers.facebook_helpers import clean_nametags, cut_hyperlinks, posts_to_db
-from ..helpers.filecoin_helpers import push_to_filecoin
+from ..helpers.facebook_helpers import clean_nametags, create_user_dirs, cut_hyperlinks, posts_to_db, save_upload_file
+from ..helpers.filecoin_helpers import push_dir_to_filecoin
+from ..models import facebook
 from ..models.user_models import UserDirectories
-from ..services.ipfs import IPFSService
 
 
 @app.route("/facebook-deplatform")
@@ -39,69 +39,16 @@ def facebook_upload():
 
     # Uploading a new file
     if request.method == "POST":
-
-        # Get the filename from the request
-        upload = request.files["uploadfile"]
-
-        # Use the user data directory configured for the app
-        upload_path = app.config["USER_DATA_DIR"]
-        if not os.path.exists(upload_path):
-            os.makedirs(upload_path)
-
-        # Create a subdirectory per username. Usernames are unique.
-        user_dir = os.path.join(
-            upload_path,
-            str(current_user.id) + "-" + current_user.username,
-        )
-        if not os.path.exists(user_dir):
-            os.makedirs(user_dir)
-
-        # Create a Facebook subdirectory.
-        facebook_dir = os.path.join(
-            user_dir,
-            "facebook",
-        )
-        if not os.path.exists(facebook_dir):
-            os.makedirs(facebook_dir)
-        else:
-            # Remove an existing directory to avoid dbase entry duplication
-            shutil.rmtree(facebook_dir)
-            os.makedirs(facebook_dir)
-
-        # Save the uploaded file
-        # TODO: move to background worker task
-        file_name = secure_filename(upload.filename)
-        print("Saving uploaded file")  # TODO: move to async user output
         try:
-            upload.save(
-                os.path.join(
-                    facebook_dir,
-                    file_name,
-                )
-            )
-        except:
-            # Return if the user did not provide a file to upload
-            # TODO: Add flash output to facebook_upload template
-            flash(
-                "Please make sure that you've selected a file and that it's in ZIP format.",
-                "alert-danger",
-            )
-            return render_template(
-                "facebook/facebook-upload.html",
-                upload=upload_success,
-                breadcrumb="Facebook / Upload content",
-            )
+            facebook_dir = create_user_dirs(current_user, app.config["USER_DATA_DIR"])
 
-        # Unzip the uploaded file
-        # TODO: move to background worker task
-        print("Extracting zip file")  # TODO: move to async user output
-        try:
-            unzip_dir = unzip(
-                os.path.join(
-                    facebook_dir,
-                    file_name,
-                )
-            )
+            # TODO: This whole procedure should be async
+            # Save the uploaded file
+            file_name = save_upload_file(request.files["uploadfile"], facebook_dir)
+            archive_filepath = os.path.join(facebook_dir, file_name)
+            # Unzip the uploaded file
+            unzip_dir = unzip(archive_filepath)
+            # Save dirs to DB
             directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
             if directory is None:
                 directory = UserDirectories(user_id=current_user.id, platform="facebook", directory=unzip_dir)
@@ -110,23 +57,8 @@ def facebook_upload():
                 directory.directory = unzip_dir
             db.session.commit()
 
-        except:
-            flash(
-                "Unable to extract zip file.",
-                "alert-danger",
-            )
-            return render_template(
-                "facebook/facebook-upload.html",
-                upload=upload_success,
-                breadcrumb="Facebook / Upload content",
-            )
+            # TODO: ENCRYPT FILES
 
-        # Parse Facebook JSON and save to SQLite
-        # TODO: move to background worker task
-        try:
-            # TODO: move to async user output
-            print("Parsing Facebook content.")
-            # TODO: move to async user output
             print("Saving posts to database.")
             (
                 total_posts,
@@ -134,62 +66,39 @@ def facebook_upload():
                 min_date,
                 profile_updates,
                 total_media,
-            ) = posts_to_db(unzip_dir)
-            # Output upload stats
+            ) = posts_to_db(unzip_dir, app.config["FACEBOOK_SQLITE_DB"])
+
             flash(
-                "Saved "
-                + str(total_posts[0])
-                + " posts between "
-                + min_date[0]
-                + " and "
-                + max_date[0]
-                + ". This includes "
-                + str(profile_updates)
-                + " profile updates. "
-                + str(total_media[0])
-                + " media files were uploaded.",
+                f"Saved {str(total_posts[0])} posts between {min_date[0]} and {max_date[0]}. This includes {str(profile_updates)} profile updates. {str(total_media[0])} media files were uploaded.",
                 "alert-success",
             )
             upload_success = True
-        except Exception as e:
+
+            # Add uploaded and parsed Facebook files to Filecoin
+            print("Uploading files to Filecoin")
+            push_dir_to_filecoin(unzip_dir)
+
+            # TODO: DELETE CACHED COPIES OF FILE UPLOADS
+
+        except (IsADirectoryError, zipfile.BadZipFile):
+            # Return if the user did not provide a file to upload
+            # TODO: Add flash output to facebook_upload template
             flash(
-                "Are you sure this is a Facebook zip file? " + str(e),
+                "Please make sure that you've selected a file and that it's in ZIP format.",
                 "alert-danger",
             )
-            return render_template(
-                "facebook/facebook-upload.html",
-                upload=upload_success,
-                breadcrumb="Facebook / Upload content",
+        except GRPCNotAvailableException:
+            flash(
+                "Could not connect to Powergate Host.",
+                "alert-danger",
             )
+        except Exception as e:
+            print(type(e))
 
-        # TODO: ENCRYPT FILES
-
-        # Pin files to IPFS
-        ipfs_service = IPFSService(ipfs_uri=app.config["IPFS_URI"])
-        pins = ipfs_service.pin_dir(unzip_dir)
-
-        # Add uploaded and parsed Facebook files to Filecoin
-        print("Uploading files to Filecoin")
-        for (
-            path,
-            subdirectory,
-            files,
-        ) in os.walk(unzip_dir):
-            for file in files:
-                if (file != ".DS_Store") and (file != "thumbs.db") and (file != "desktop.ini") and (file != ".zip"):
-                    try:
-                        push_to_filecoin(
-                            path,
-                            file,
-                            "facebook",
-                        )
-                    except Exception as e:
-                        flash(
-                            "Unable to store " + file + " on Filecoin. " + str(e) + ".",
-                            "alert-danger",
-                        )
-
-        # TODO: DELETE CACHED COPIES OF FILE UPLOADS
+            flash(
+                "An error occured while uploading the archive: " + str(e),
+                "alert-danger",
+            )
 
     return render_template(
         "facebook/facebook-upload.html",
@@ -219,9 +128,8 @@ def facebook_view():
 
     fb_dir = directory.directory
     db_name = os.path.basename(os.path.normpath(fb_dir))
-    fb_db = fb_dir + "/" + str(db_name) + ".sqlite"
 
-    facebook_db = sqlite3.connect(fb_db)
+    facebook_db = sqlite3.connect(app.config["FACEBOOK_SQLITE_DB"])
     cursor = facebook_db.cursor()
     cursor.execute("SELECT * FROM albums ORDER BY last_modified DESC")
     albums = cursor.fetchall()
@@ -254,14 +162,13 @@ def facebook_memories():
 
     fb_dir = directory[0]
     db_name = os.path.basename(os.path.normpath(fb_dir))
-    fb_db = fb_dir + "/" + str(db_name) + ".sqlite"
 
     day = datetime.now().strftime("%d")
     month = datetime.now().strftime("%m")
     month_script = datetime.now().strftime("%b")
     year = datetime.now().strftime("%Y")
 
-    facebook_db = sqlite3.connect(fb_db)
+    facebook_db = sqlite3.connect(app.config["FACEBOOK_SQLITE_DB"])
     cursor = facebook_db.cursor()
     # Check if demo data is being used
     if os.path.split(fb_dir)[1][:20] == "facebook-deplatformr":
@@ -424,22 +331,8 @@ def facebook_album(
             breadcrumb="Facebook / View content ",
         )
 
-    fb_dir = directory.directory
-    db_name = os.path.basename(os.path.normpath(fb_dir))
-    fb_db = fb_dir + "/" + str(db_name) + ".sqlite"
-
-    facebook_db = sqlite3.connect(fb_db)
-    cursor = facebook_db.cursor()
-    cursor.execute(
-        "SELECT * FROM media WHERE album_id = ? ORDER BY timestamp DESC",
-        (album_id,),
-    )
-    files = cursor.fetchall()
-    cursor.execute(
-        "SELECT * FROM albums WHERE id = ?",
-        (album_id,),
-    )
-    album = cursor.fetchone()
+    album = facebook.Album.query.filter_by(album_id=album_id)
+    files = facebook.Media.query.filter_by(album_id=album_id).all()
 
     return render_template(
         "facebook/facebook-album.html",

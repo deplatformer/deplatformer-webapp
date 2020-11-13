@@ -1,9 +1,17 @@
 import json
 import os
+import shutil
 import sqlite3
 from datetime import datetime
 
 import ftfy
+from flask import app
+from werkzeug.utils import secure_filename
+
+from deplatformer_webapp.models.facebook import Media
+
+from ..app import db as appdb
+from ..models import facebook
 
 
 def activate_hyperlinks(
@@ -166,36 +174,13 @@ def clean_nametags(
     return post
 
 
-def posts_to_db(
-    fb_dir,
-):
-    # Get FB content directory name, use as database name & location
-    db_name = os.path.basename(os.path.normpath(fb_dir))
-    # Create database if it doesn't exist
-    db = sqlite3.connect(fb_dir + "/" + db_name + ".sqlite")
+def posts_to_db(fb_dir, db_name):
+    print("Parsing Facebook content.")
+    db = sqlite3.connect(db_name)
     cursor = db.cursor()
-    # Create database structure if it doesn't exist
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS posts(id INTEGER NOT NULL PRIMARY KEY, timestamp TEXT, post TEXT, media_files INTEGER, url TEXT, url_label TEXT, place_name TEXT, address TEXT, latitude TEXT, longitude TEXT, profile_update BOOLEAN)"
-    )
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS media(id INTEGER NOT NULL PRIMARY KEY, timestamp TEXT, title TEXT, description TEXT, latitude TEXT, longitude TEXT, orientation INTEGER, filepath TEXT, post_id INTEGER, album_id INTEGER, FOREIGN KEY(post_id) REFERENCES posts(id), FOREIGN KEY(album_id) REFERENCES albums(id))"
-    )
-    cursor.execute("CREATE INDEX IF NOT EXISTS filepath ON media(filepath)")
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS albums(id INTEGER NOT NULL PRIMARY KEY, last_modified TEXT, name TEXT, description TEXT, total_files INTEGER, cover_photo_id INTEGER, FOREIGN KEY(cover_photo_id) REFERENCES media(id))"
-    )
-    cursor.execute("CREATE TABLE IF NOT EXISTS tags(id INTEGER NOT NULL PRIMARY KEY, tag TEXT)")
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS tag_links(id INTEGER NOT NULL PRIMARY KEY, tag_id INTEGER, post_id INTEGER, FOREIGN KEY(tag_id) REFERENCES tags(id), FOREIGN KEY (post_id) REFERENCES posts(id))"
-    )
-    db.commit()
 
     # Add albums with media files first so they can be referenced from posts
-    albums_to_db(
-        fb_dir,
-        db_name,
-    )
+    albums_to_db(fb_dir)
 
     # FB might include more than one posts JSON file
     files = os.listdir(fb_dir + "/posts/")
@@ -203,8 +188,8 @@ def posts_to_db(
         file_split = os.path.splitext(file)
         if (file_split[0][:10] == "your_posts") and (file_split[1] == ".json"):
             # Read data from FB JSON file
-            f = open(os.path.join(fb_dir + "/posts/" + file))
-            posts = json.load(f)
+            with open(os.path.join(fb_dir + "/posts/" + file)) as f:
+                posts = json.load(f)
 
             for content in posts:
                 unix_time = content["timestamp"]
@@ -215,10 +200,7 @@ def posts_to_db(
                     # Clean up FB's garbage UTF-8 (Mojibake)
                     post = ftfy.fix_text(post_source)
                 except:
-                    try:
-                        post = content["title"]
-                    except:
-                        post = None
+                    post = content.get("title", None)
 
                 url = None
                 url_label = None
@@ -464,259 +446,163 @@ def albums_to_db(
     fb_dir,
     db_name,
 ):
-    # intiliaze database
-    db = sqlite3.connect(fb_dir + "/" + db_name + ".sqlite")
-    cursor = db.cursor()
-
     # FB includes one JSON file per album
     files = os.listdir(fb_dir + "/photos_and_videos/album/")
     for file in files:
         file_split = os.path.splitext(file)
         if file_split[1] == ".json":
             # Read data from FB JSON file
-            f = open(os.path.join(fb_dir + "/photos_and_videos/album/" + file))
-            album = json.load(f)
-            try:
-                unix_time = album["last_modified_timestamp"]
-                last_modified = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S")
-            except:
-                last_modified = None
-            try:
-                description = album["description"]
-            except:
-                description = None
-            try:
-                name = album["name"]
-            except:
-                name = None
+            with open(os.path.join(fb_dir + "/photos_and_videos/album/" + file)) as f:
+                album_contents = json.load(f)
+
+            unix_time = album_contents.get("last_modified_timestamp", None)
+            last_modified = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S") if unix_time else None
+            description = album_contents.get("description", None)
+            name = album_contents.get("name", None)
             cover_photo = None  # get Media file id to use as foreign key
+
             # Save album info
-            cursor.executemany(
-                "INSERT INTO albums (last_modified, name, description, cover_photo_id) VALUES (?,?,?,?)",
-                [
-                    (
-                        last_modified,
-                        name,
-                        description,
-                        cover_photo,
-                    )
-                ],
+            album = facebook.Album(
+                name=name, description=description, last_modified=last_modified, cover_photo_id=cover_photo
             )
-            db.commit()
+            appdb.session.add(album)
+            appdb.session.commit()
 
-            # Get current album_id
-            cursor.execute("SELECT last_insert_rowid()")
-            album_id = cursor.fetchone()
-
-            for photo in album["photos"]:
-                try:
-                    filepath = photo["uri"]
-                except:
-                    # Photo does not exist
+            for photo in album_contents["photos"]:
+                filepath = photo.get("uri", None)
+                if filepath is None or filepath[:18] != "photos_and_videos/":  # Don't inlude links to external images
                     continue
-                if filepath[:18] != "photos_and_videos/":
-                    # Don't inlude links to external images
-                    continue
-                try:
-                    unix_time = photo["creation_timestamp"]
-                    timestamp = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S")
-                except:
-                    timestamp = None
-                try:
-                    title = ftfy.fix_text(photo["title"])
-                except:
-                    title = None
-                try:
-                    description = ftfy.fix_text(photo["description"])
-                except:
-                    description = None
-                try:
-                    latitude = photo["media_metadata"]["photo_metadata"]["latitude"]
-                except:
-                    latitude = None
-                try:
-                    longitude = photo["media_metadata"]["photo_metadata"]["longitude"]
-                except:
-                    longitude = None
-                try:
-                    orientation = photo["media_metadata"]["photo_metadata"]["orientation"]
-                except:
-                    orientation = None
 
-                cursor.executemany(
-                    "INSERT INTO media (timestamp, title, description, latitude, longitude, orientation, filepath, post_id, album_id) VALUES (?,?,?,?,?,?,?,?,?)",
-                    [
-                        (
-                            timestamp,
-                            title,
-                            description,
-                            latitude,
-                            longitude,
-                            orientation,
-                            filepath,
-                            None,
-                            album_id[0],
-                        )
-                    ],
+                unix_time = photo.get("creation_timestamp", None)
+                timestamp = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S") if unix_time else None
+                title = ftfy.fix_text(photo["title"]) if photo.get("title") else None
+                description = ftfy.fix_text(photo["description"]) if photo.get("description") else None
+                latitude = photo.get("media_metadata", {}).get("photo_metadata", {}).get("latitude", None)
+                longitude = photo.get("media_metadata", {}).get("photo_metadata", {}).get("longitude", None)
+                orientation = photo.get("media_metadata", {}).get("photo_metadata", {}).get("orientation", None)
+
+                media = facebook.Media(
+                    timestamp=timestamp,
+                    title=title,
+                    description=description,
+                    latitude=latitude,
+                    longitude=longitude,
+                    orientation=orientation,
+                    filepath=filepath,
+                    post_id=None,
+                    album_id=album.id,
                 )
-                db.commit()
+                appdb.session.add(media)
+                appdb.session.commit()
 
-            # Count total number of photos for this album
-            cursor.execute(
-                "SELECT COUNT(id) FROM media WHERE album_id=?",
-                (album_id[0],),
-            )
-            total_files = cursor.fetchone()
-            if (total_files[0] == None) or (total_files[0] == 0):
+            total_files = len(facebook.Media.query.filter_by(album_id=album.id).all())
+            if total_files == 0:
                 # Delete albums that have zero files
-                cursor.execute(
-                    "DELETE FROM albums WHERE id=?",
-                    (album_id[0],),
-                )
-                db.commit
+                appdb.session.delete(album)
+                appdb.session.commit()
                 continue
+
             # Get cover photo id for this album
-            cursor.execute(
-                "SELECT id FROM media where filepath=?",
-                (album["cover_photo"]["uri"],),
-            )
-            cover_photo = cursor.fetchone()
-            try:
-                cover_photo_id = cover_photo[0]
-            except:
-                cover_photo_id = None
-            # Update album record with number of photos and cover_photo_id
-            cursor.execute(
-                "UPDATE albums SET total_files=?, cover_photo_id=? WHERE id=?",
-                (
-                    total_files[0],
-                    cover_photo_id,
-                    album_id[0],
-                ),
-            )
-            db.commit()
+            cover_photo = facebook.Media.query.filter_by(filepath=album_contents["cover_photo"]["uri"]).first()
+            album.total_files = total_files
+            album.cover_photo_id = cover_photo.id
+
+            appdb.session.commit()
 
     # FB includes one directory of images that does not have a JSON file
     # Save 'your_posts' as an album
     if os.path.isdir(fb_dir + "/photos_and_videos/your_posts/"):
-        cursor.execute(
-            "INSERT INTO albums (name) VALUES (?)",
-            ("Your Posts",),
-        )
-        db.commit()
-
-        # Get album_id
-        cursor.execute("SELECT last_insert_rowid()")
-        album_id = cursor.fetchone()
+        album = facebook.Album(name="Your Posts")
+        appdb.session.add(album)
+        appdb.session.commit()
 
         files = os.listdir(fb_dir + "/photos_and_videos/your_posts/")
         for file in files:
             filepath = "photos_and_videos/your_posts/" + file
-            cursor.executemany(
-                "INSERT INTO media (filepath, album_id) VALUES (?,?)",
-                [
-                    (
-                        filepath,
-                        album_id[0],
-                    )
-                ],
-            )
-            db.commit()
+            media = facebook.Media(filepath=filepath, album_id=album.id)
+            appdb.session.add(media)
+            appdb.session.commit()
 
         # Count total number of photos for this album
-        cursor.execute(
-            "SELECT COUNT(id) FROM media WHERE album_id=?",
-            (album_id[0],),
-        )
-        total_files = cursor.fetchone()
+        total_files = len(facebook.Media.query.filter_by(album_id=album.id).all())
 
         # Use the first photo as a cover for the album
-        cursor.execute(
-            "SELECT id FROM media WHERE album_id=?",
-            (album_id[0],),
-        )
-        cover_photo = cursor.fetchone()
+        cover_photo = facebook.Media.query.filter_by(album_id=album.id).first()
 
         # Update album record with number of photos and cover photo
-        cursor.execute(
-            "UPDATE albums SET total_files=?, cover_photo_id=? WHERE id=?",
-            (
-                total_files[0],
-                cover_photo[0],
-                album_id[0],
-            ),
-        )
-        db.commit()
+        album.total_files = total_files
+        album.cover_photo = cover_photo.id
+        appdb.session.commit()
 
     # Include the video directory
     if os.path.isdir(fb_dir + "/photos_and_videos/videos/"):
-        cursor.execute(
-            "INSERT INTO albums (name) VALUES (?)",
-            ("Videos",),
-        )
-        db.commit()
-
-        # Get album_id
-        cursor.execute("SELECT last_insert_rowid()")
-        album_id = cursor.fetchone()
+        album = facebook.Album(name="Videos")
+        appdb.session.add(album)
+        appdb.session.commit()
 
         if os.path.isfile(fb_dir + "/photos_and_videos/your_videos.json"):
-            f = open(fb_dir + "/photos_and_videos/your_videos.json")
-            videos = json.load(f)
+            with open(fb_dir + "/photos_and_videos/your_videos.json") as f:
+                videos = json.load(f)
+
             for video in videos["videos"]:
-                try:
-                    filepath = video["uri"]
-                except:
-                    # Video file does not exist
+                filepath = video.get("uri", None)
+                if filepath is None or filepath[:18] != "photos_and_videos/":
                     continue
-                if filepath[:18] != "photos_and_videos/":
-                    # Don't inlude links to external videos
-                    continue
-                try:
-                    unix_time = video["creation_timestamp"]
-                    timestamp = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S")
-                except:
-                    timestamp = None
-                try:
-                    description = video["description"]
-                except:
-                    description = None
-                cursor.executemany(
-                    "INSERT INTO media (timestamp, description, filepath, album_id) VALUES (?,?,?,?)",
-                    [
-                        (
-                            timestamp,
-                            description,
-                            filepath,
-                            album_id[0],
-                        )
-                    ],
+                unix_time = video.get("creation_timestamp", None)
+                timestamp = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S") if unix_time else None
+                description = video.get("description", None)
+
+                media = facebook.Media(
+                    timestamp=timestamp, description=description, filepath=filepath, album_id=album.id
                 )
-                db.commit()
+                appdb.session.add(media)
+                appdb.session.commit()
 
         # Count total number of videos in this album
-        cursor.execute(
-            "SELECT COUNT(id) FROM media WHERE album_id=?",
-            (album_id[0],),
-        )
-        total_files = cursor.fetchone()
+        total_files = len(facebook.Media.query.filter_by(album_id=album.id).all())
 
         # Use the first video as a cover for the album
-        cursor.execute(
-            "SELECT id FROM media WHERE album_id=?",
-            (album_id[0],),
-        )
-        cover_video = cursor.fetchone()
+        cover_video = facebook.Media.query.filter_by(album_id=album.id).first()
 
         # Update album record with number of videos and cover video
-        cursor.execute(
-            "UPDATE albums SET total_files=?, cover_photo_id=? WHERE id=?",
-            (
-                total_files[0],
-                cover_video[0],
-                album_id[0],
-            ),
-        )
-        db.commit()
+        album.total_files = total_files
+        album.cover_photo = cover_video
+        appdb.session.commit()
 
-    return ()
+
+def create_user_dirs(user, base_path):
+    # Use the user data directory configured for the app
+    upload_path = base_path
+    if not os.path.exists(upload_path):
+        os.makedirs(upload_path)
+
+    # Create a subdirectory per username. Usernames are unique.
+    user_dir = os.path.join(
+        upload_path,
+        str(user.id) + "-" + user.username,
+    )
+    if not os.path.exists(user_dir):
+        os.makedirs(user_dir)
+
+    # Create a Facebook subdirectory.
+    facebook_dir = os.path.join(
+        user_dir,
+        "facebook",
+    )
+    if os.path.exists(facebook_dir):
+        # Remove an existing directory to avoid dbase entry duplication
+        shutil.rmtree(facebook_dir)
+    os.makedirs(facebook_dir)
+    return facebook_dir
+
+
+def save_upload_file(upload_file, directory):
+    file_name = secure_filename(upload_file.filename)
+    print("Saving uploaded file")  # TODO: move to async user output
+    upload_file.save(
+        os.path.join(
+            directory,
+            file_name,
+        )
+    )
+    return file_name

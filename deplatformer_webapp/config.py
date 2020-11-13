@@ -23,8 +23,6 @@ class Config:
     APP_LOG_LEVEL = logging.INFO
     LOG_FORMAT = "[%(asctime)s] %(levelname)s in %(filename)s:%(lineno)d " "%(message)s"
 
-    
-
     # Flask settings
     SECRET_KEY = "3d488586-35ec-4706-ab35-cb46e59f11b6"
 
@@ -38,15 +36,22 @@ class Config:
     BASEDIR = os.path.abspath(os.path.dirname(__file__))
     DATA_DIR = os.getenv(
         "DATA_DIR",
-        os.path.join(os.getenv("APPDATA"), "Deplatformer") if platform.system() == "Windows" else os.path.expanduser("~/.deplatformer")
+        os.path.join(os.getenv("APPDATA"), "Deplatformer")
+        if platform.system() == "Windows"
+        else os.path.expanduser("~/.deplatformer"),
     )
     USER_DATA_DIR = os.path.join(DATA_DIR, "_user_data")
 
     # Flask-SQLAlchemy settings
     # File-based SQL database
-    SQLITE_DB = os.path.join(DATA_DIR, "deplatformr.sqlite")
-    SQLALCHEMY_DATABASE_URI = f"sqlite:////{SQLITE_DB}"
+    CORE_SQLITE_DB = os.path.join(DATA_DIR, "deplatformer.sqlite")
+    FACEBOOK_SQLITE_DB = os.path.join(DATA_DIR, "facebook.sqlite")
+    PLATFORM_DBS = {
+        "facebook": FACEBOOK_SQLITE_DB,
+    }
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # Avoids SQLAlchemy warning
+    SQLALCHEMY_DATABASE_URI = f"sqlite:////{CORE_SQLITE_DB}"
+    SQLALCHEMY_BINDS = {"facebook": f"sqlite:////{FACEBOOK_SQLITE_DB}"}
 
     IPFS_STAGING_DIR = os.path.join(DATA_DIR, ".ipfs-staging")
     IPFS_DATA_DIR = os.path.join(DATA_DIR, ".ipfs-data")

@@ -4,13 +4,15 @@ import sqlite3
 from flask import render_template, send_from_directory
 from flask_user import current_user, login_required
 
-from ..app import app
-from ..models.user_models import UserDirectories
-
+from ..app import app, db
+from ..models.user_models import UserDirectories, User
+from ..crypto import create_user_key_if_not_exists
 
 @app.route("/")
 @login_required
 def homepage():
+    create_user_key_if_not_exists(current_user.username, current_user.password, db)
+    
     return render_template(
         "homepage.html",
         breadcrumb="Home",
@@ -31,10 +33,7 @@ def userfile(
         return "File not found."
 
     try:
-        platform_dir = directory.directory
-        platform_db_name = os.path.basename(os.path.normpath(platform_dir))
-        platform_db = platform_dir + "/" + str(platform_db_name) + ".sqlite"
-        db = sqlite3.connect(platform_db)
+        db = sqlite3.connect(app.config["PLATFORM_DBS"][platform])
         cursor = db.cursor()
         cursor.execute(
             "SELECT filepath FROM media WHERE id = ?",

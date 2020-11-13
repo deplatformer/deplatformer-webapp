@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "deplatformer-webapp"
-version = "0.1.7"
+version = "0.1.8"
 description = "Flask webapp for the deplatformer platform"
 authors = ["Deplatformer Team <info@deplatformer.io>"]
 maintainers = ["Antreas Pogiatzis <antreas@deplatformer.io>"]

@@ -28,7 +28,7 @@ def create_app():
     )
     app.config.from_object(config_class)
 
-    os.makedirs(app.config["DATA_DIR"],exist_ok=True)
+    os.makedirs(app.config["DATA_DIR"], exist_ok=True)
 
     db.init_app(app)
     migrate.init_app(
@@ -41,7 +41,7 @@ def create_app():
 
 app = create_app()
 
-from .models import filecoin_models, user_models
+from .models import facebook, filecoin_models, user_models
 from .views import facebook_views, filecoin_views, views
 
 # Setup Flask-User and specify the User data-model

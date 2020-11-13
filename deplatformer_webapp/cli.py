@@ -47,8 +47,9 @@ def run(ctx, host, port, debug):
 
     from .app import app
 
-    ipfs_container = run_docker_ipfs_daemon(app.config["IPFS_STAGING_DIR"], app.config["IPFS_STAGING_DIR"])
-    register_ipfs_daemon_exit_handler(ipfs_container)
+    # Runs an IPFS node
+    # ipfs_container = run_docker_ipfs_daemon(app.config["IPFS_STAGING_DIR"], app.config["IPFS_STAGING_DIR"])
+    # register_ipfs_daemon_exit_handler(ipfs_container)
 
     ctx.invoke(migratedb)
 
@@ -80,8 +81,9 @@ def deletedb():
     """Deletes db file"""
     from .app import app
 
-    os.remove(os.path.join(app.config["BASEDIR"], app.config["SQLITE_DB"]))
-    click.echo(f"Database deleted successfully!")
+    os.remove(os.path.join(app.config["BASEDIR"], app.config["CORE_SQLITE_DB"]))
+    os.remove(os.path.join(app.config["BASEDIR"], app.config["FACEBOOK_SQLITE_DB"]))
+    click.echo(f"Databases deleted successfully!")
 
 
 @cli.command()

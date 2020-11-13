@@ -1,7 +1,6 @@
 from flask_user import UserMixin
 
 from ..app import db
-from ..helpers.db import get_collation_by_engine
 
 
 class User(
@@ -25,7 +24,7 @@ class User(
     username = db.Column(
         db.String(
             100,
-            collation=get_collation_by_engine(),
+            collation="NOCASE",
         ),
         nullable=False,
         unique=True,
@@ -41,7 +40,7 @@ class User(
     first_name = db.Column(
         db.String(
             100,
-            collation=get_collation_by_engine(),
+            collation="NOCASE",
         ),
         nullable=False,
         server_default="",
@@ -49,7 +48,7 @@ class User(
     last_name = db.Column(
         db.String(
             100,
-            collation=get_collation_by_engine(),
+            collation="NOCASE",
         ),
         nullable=False,
         server_default="",
@@ -75,3 +74,23 @@ class UserDirectories(db.Model):
         db.ForeignKey("users.id"),
         nullable=False,
     )
+
+
+class UserKey(db.Model):
+    __tablename__ = "user_key"
+    encrypted_key = db.Column(
+        db.String(),
+        nullable=False,
+        primary_key=True,
+    )
+    iv = db.Column(db.String(), nullable=False)
+
+
+# class UserFileMetadata(db.Model):
+#     __tablename__ = "user_file_metadata"
+
+
+# class UserFile(db.Model):
+#     filepath = db.Column(db.String(), nullable=False)
+#     enc_file_key = db.Column(db.String(), nullable=False)
+#     cid = db.Column(db.String(), nullable=False, primary_key=True)

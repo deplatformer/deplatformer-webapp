@@ -110,6 +110,7 @@ def push_to_filecoin(
 
     except Exception as e:
         # Output error message if pushing to Filecoin fails
+        print("Failed to upload {0} to Filecoin.".format(file_name))
         flash(
             "'{}' failed to upload to Filecoin. {}.".format(
                 file_name,
@@ -131,3 +132,19 @@ def push_to_filecoin(
         # (how to isolate these? e.g. 'status_code.details = ...')
 
     return ()
+
+
+def push_dir_to_filecoin(directory):
+    for (
+        path,
+        subdirectory,
+        files,
+    ) in os.walk(directory):
+        for file in files:
+            print(file)
+            if (file != ".DS_Store") and (file != "thumbs.db") and (file != "desktop.ini") and (file != ".zip"):
+                push_to_filecoin(
+                    path,
+                    file,
+                    "facebook",
+                )

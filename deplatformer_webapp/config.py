@@ -50,8 +50,8 @@ class Config:
         "facebook": FACEBOOK_SQLITE_DB,
     }
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # Avoids SQLAlchemy warning
-    SQLALCHEMY_DATABASE_URI = f"sqlite:////{CORE_SQLITE_DB}"
-    SQLALCHEMY_BINDS = {"facebook": f"sqlite:////{FACEBOOK_SQLITE_DB}"}
+    SQLALCHEMY_DATABASE_URI = f"sqlite:///{CORE_SQLITE_DB}"
+    SQLALCHEMY_BINDS = {"facebook": f"sqlite:///{FACEBOOK_SQLITE_DB}"}
 
     IPFS_STAGING_DIR = os.path.join(DATA_DIR, ".ipfs-staging")
     IPFS_DATA_DIR = os.path.join(DATA_DIR, ".ipfs-data")

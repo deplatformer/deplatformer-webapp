@@ -80,3 +80,8 @@ _meta
 
 # Include migrations
 !**/*/env.py
+
+
+#exclude build artifacts
+build/
+dist/

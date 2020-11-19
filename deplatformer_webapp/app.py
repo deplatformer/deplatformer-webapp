@@ -1,14 +1,16 @@
 import os
+import sys
 
 from flask import Flask
-from flask_migrate import Migrate
+#needs migrate import for "upgrade" function
+from flask_migrate import Migrate, migrate, upgrade
 from flask_sqlalchemy import SQLAlchemy
 from flask_user import UserManager
 
 from .config import app_config
 
 db = SQLAlchemy()
-migrate = Migrate()
+flask_migrate = Migrate()
 
 
 def create_app():
@@ -22,19 +24,35 @@ def create_app():
 
     config_class = app_config[env]
 
-    app = Flask(
-        __name__,
-        static_folder="static",
-    )
+    if getattr(sys, 'frozen', False):
+        template_folder = os.path.join(sys._MEIPASS, 'templates')
+        static_folder = os.path.join(sys._MEIPASS, 'static')
+        app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
+    else:
+        #app = Flask(__name__)
+        app = Flask(
+            __name__,
+            static_folder="static",
+        )
     app.config.from_object(config_class)
 
     os.makedirs(app.config["DATA_DIR"], exist_ok=True)
 
     db.init_app(app)
-    migrate.init_app(
+    flask_migrate.init_app(
         app,
         db,
     )
+    if getattr(sys, 'frozen', False):
+        with app.app_context():
+            migrations_folder = os.path.join(sys._MEIPASS, 'migrations')
+            print(migrations_folder)
+            upgrade(directory=migrations_folder)
+    else:
+        with app.app_context():
+            cwd = os.path.abspath(os.path.dirname(__file__))
+            print(os.path.join(cwd, "migrations"))
+            upgrade(directory=os.path.join(cwd, "migrations"))
 
     return app
 

@@ -41,9 +41,9 @@ def cli(ctx, env_file):
 @pass_context
 def run(ctx, host, port, debug):
     """Launches the app"""
-    if not is_docker_running():
-        print("Coulnd't initiate IPFS daemon. Are you sure you have docker daemon installed and running?")
-        exit(1)
+    #if not is_docker_running():
+    #    print("Coulnd't initiate IPFS daemon. Are you sure you have docker daemon installed and running?")
+    #    exit(1)
 
     from .app import app
 
@@ -70,6 +70,8 @@ def version():
 def migratedb():
     """Creates database and applies migrations"""
     from .app import app
+
+    #print("Using directory for migrations: %s" % os.path.join(cwd, "migrations"))
 
     with app.app_context():
         cwd = os.path.abspath(os.path.dirname(__file__))

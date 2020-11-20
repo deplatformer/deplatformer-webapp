@@ -18,18 +18,11 @@ from ..models.user_models import UserDirectories
 @app.route("/facebook-deplatform")
 @login_required
 def facebook_deplatform():
-    return render_template(
-        "facebook/facebook-deplatform.html",
-        breadcrumb="Facebook / Deplatform",
-    )
+    return render_template("facebook/facebook-deplatform.html", breadcrumb="Facebook / Deplatform",)
 
 
 @app.route(
-    "/facebook-upload",
-    methods=[
-        "GET",
-        "POST",
-    ],
+    "/facebook-upload", methods=["GET", "POST",],
 )
 @login_required
 def facebook_upload():
@@ -60,16 +53,10 @@ def facebook_upload():
             # TODO: ENCRYPT FILES
 
             print("Saving posts to database.")
-            (
-                total_posts,
-                max_date,
-                min_date,
-                profile_updates,
-                total_media,
-            ) = posts_to_db(unzip_dir, app.config["FACEBOOK_SQLITE_DB"])
+            (total_posts, max_date, min_date, profile_updates, total_media,) = posts_to_db(unzip_dir)
 
             flash(
-                f"Saved {str(total_posts[0])} posts between {min_date[0]} and {max_date[0]}. This includes {str(profile_updates)} profile updates. {str(total_media[0])} media files were uploaded.",
+                f"Saved {str(total_posts)} posts between {min_date} and {max_date}. This includes {str(profile_updates)} profile updates. {str(total_media)} media files were uploaded.",
                 "alert-success",
             )
             upload_success = True
@@ -84,26 +71,21 @@ def facebook_upload():
             # Return if the user did not provide a file to upload
             # TODO: Add flash output to facebook_upload template
             flash(
-                "Please make sure that you've selected a file and that it's in ZIP format.",
-                "alert-danger",
+                "Please make sure that you've selected a file and that it's in ZIP format.", "alert-danger",
             )
         except GRPCNotAvailableException:
             flash(
-                "Could not connect to Powergate Host.",
-                "alert-danger",
+                "Could not connect to Powergate Host.", "alert-danger",
             )
         except Exception as e:
             print(type(e))
 
             flash(
-                "An error occured while uploading the archive: " + str(e),
-                "alert-danger",
+                "An error occured while uploading the archive: " + str(e), "alert-danger",
             )
 
     return render_template(
-        "facebook/facebook-upload.html",
-        upload=upload_success,
-        breadcrumb="Facebook / Upload content",
+        "facebook/facebook-upload.html", upload=upload_success, breadcrumb="Facebook / Upload content",
     )
 
 
@@ -116,14 +98,10 @@ def facebook_view():
 
     if directory is None:
         flash(
-            "Facebook data not found.",
-            "alert-danger",
+            "Facebook data not found.", "alert-danger",
         )
         return render_template(
-            "facebook/facebook-view.html",
-            breadcrumb="Facebook / View content",
-            this_day=day,
-            this_month=month_script,
+            "facebook/facebook-view.html", breadcrumb="Facebook / View content", this_day=day, this_month=month_script,
         )
 
     fb_dir = directory.directory
@@ -152,16 +130,11 @@ def facebook_memories():
     directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
     if directory is None:
         flash(
-            "Facebook data not found.",
-            "alert-danger",
+            "Facebook data not found.", "alert-danger",
         )
-        return render_template(
-            "facebook/facebook-memories.html",
-            breadcrumb="Facebook / View content / Memories",
-        )
+        return render_template("facebook/facebook-memories.html", breadcrumb="Facebook / View content / Memories",)
 
-    fb_dir = directory[0]
-    db_name = os.path.basename(os.path.normpath(fb_dir))
+    fb_dir = directory.directory
 
     day = datetime.now().strftime("%d")
     month = datetime.now().strftime("%m")
@@ -175,18 +148,12 @@ def facebook_memories():
         # Prime for demo response
         cursor.execute(
             "SELECT * FROM posts WHERE strftime('%m', timestamp) = ? AND strftime('%d', timestamp) = ? ORDER BY timestamp ASC",
-            (
-                "08",
-                "02",
-            ),
+            ("08", "02",),
         )
     else:
         cursor.execute(
             "SELECT * FROM posts WHERE strftime('%m', timestamp) = ? AND strftime('%d', timestamp) = ? ORDER BY timestamp ASC",
-            (
-                month,
-                day,
-            ),
+            (month, day,),
         )
     posts = cursor.fetchall()
 
@@ -202,17 +169,13 @@ def facebook_memories():
                 clean_post_names = clean_nametags(post[2])
                 # TODO: figure out how to activate post hyperlinks within the post text
                 # parsed_post, url_count = activate_hyperlinks(clean_post_names)
-                (
-                    parsed_post,
-                    urls,
-                ) = cut_hyperlinks(clean_post_names)
+                (parsed_post, urls,) = cut_hyperlinks(clean_post_names)
             else:
                 parsed_post = None
                 urls = None
 
             cursor.execute(
-                "SELECT * FROM media WHERE post_id = ?",
-                (post[0],),
+                "SELECT * FROM media WHERE post_id = ?", (post[0],),
             )
             media = cursor.fetchall()
 
@@ -221,10 +184,7 @@ def facebook_memories():
                 if file[3] is not None:
                     if file[3] != post[2]:
                         clean_post_names = clean_nametags(file[3])
-                        (
-                            file_parsed_post,
-                            file_urls,
-                        ) = cut_hyperlinks(clean_post_names)
+                        (file_parsed_post, file_urls,) = cut_hyperlinks(clean_post_names)
                     else:
                         file_parsed_post = None
                         file_urls = None
@@ -235,19 +195,8 @@ def facebook_memories():
                     file_parsed_post = None
                     file_urls = None
                 extension = os.path.splitext(file[7])
-                if extension[1] == ".mp4":
-                    mimetype = "video"
-                else:
-                    mimetype = "image"
-                files.update(
-                    {
-                        file[0]: {
-                            "file_post": file_parsed_post,
-                            "urls": file_urls,
-                            "mimetype": mimetype,
-                        }
-                    }
-                )
+                mimetype = "video" if extension[1] == ".mp4" else "image"
+                files.update({file[0]: {"file_post": file_parsed_post, "urls": file_urls, "mimetype": mimetype,}})
                 # reset parsed_post so that it's not re-used for entries that don't have a file[3]
                 file_parsed_post = None
                 file_urls = None
@@ -281,10 +230,7 @@ def facebook_memories():
                     clean_post_names = clean_nametags(post[2])
                     # TODO: figure out how to activate post hyperlinks within the post text
                     # parsed_post, url_count = activate_hyperlinks(clean_post_names)
-                    (
-                        parsed_post,
-                        urls,
-                    ) = cut_hyperlinks(clean_post_names)
+                    (parsed_post, urls,) = cut_hyperlinks(clean_post_names)
 
                 if post[4] is not None and len(urls) == 0:
                     urls = []
@@ -317,35 +263,25 @@ def facebook_memories():
 
 @app.route("/facebook-album/<album_id>")
 @login_required
-def facebook_album(
-    album_id,
-):
+def facebook_album(album_id,):
     directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
     if directory is None:
         flash(
-            "Facebook data not found.",
-            "alert-danger",
+            "Facebook data not found.", "alert-danger",
         )
-        return render_template(
-            "facebook/facebook-view.html",
-            breadcrumb="Facebook / View content ",
-        )
+        return render_template("facebook/facebook-view.html", breadcrumb="Facebook / View content ",)
 
-    album = facebook.Album.query.filter_by(album_id=album_id)
+    album = facebook.Album.query.filter_by(id=album_id)
     files = facebook.Media.query.filter_by(album_id=album_id).all()
+    print(files)
 
     return render_template(
-        "facebook/facebook-album.html",
-        breadcrumb="Facebook / View content / Albums",
-        files=files,
-        album=album,
+        "facebook/facebook-album.html", breadcrumb="Facebook / View content / Albums", files=files, album=album,
     )
 
 
 @app.route("/facebook-manage")
 @login_required
 def facebook_manage():
-    return render_template(
-        "facebook/facebook-manage.html",
-        breadcrumb="Facebook / Manage content",
-    )
+    return render_template("facebook/facebook-manage.html", breadcrumb="Facebook / Manage content",)
+

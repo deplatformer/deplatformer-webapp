@@ -4,10 +4,10 @@
 
 <div style="margin-left: 20px;">
 
-<H1 class="header">{{ album[2] }}</H1>
+<H1 class="header">{{ album.name }}</H1>
 
 {% if album[3] %}
-  <div class="small_note">{{ album[3] }}</div>
+  <div class="small_note">{{ album.description }}</div>
   <hr style="margin: 10px 0" />
 {% endif %}
 
@@ -23,18 +23,18 @@
 
   <div class="col">
     <div class="card" style="margin-top: 30px; text-align:center; border: 0;">
-      {% if album[2] == "Videos" %}
+      {% if album.name == "Videos" %}
         <div class="embed-responsive embed-responsive-4by3">
-          <video controls><source src="/userfile/facebook/{{ file[0] }}" /></video>
+          <video controls><source src="/userfile/facebook/{{ file.id }}" /></video>
         </div>
       {% else %}
-        <a href="/userfile/facebook/{{ file[0] }}">
-        <img class="card-img-top img-fluid" src="/userfile/facebook/{{ file[0] }}" title="posted {{ file[1] }}">
+        <a href="/userfile/facebook/{{ file.id }}">
+        <img class="card-img-top img-fluid" src="/userfile/facebook/{{ file.id }}" title="posted {{ file.timestamp }}">
         </a>
       {% endif %}
-      {% if file[3] %}
+      {% if file.description %}
         <div class="card-body">
-        <p class="card-text"><div class="small_note">{{ file[3] }}</div></p>
+        <p class="card-text"><div class="small_note">{{ file.description }}</div></p>
         </div>
       {% endif %}
     </div>

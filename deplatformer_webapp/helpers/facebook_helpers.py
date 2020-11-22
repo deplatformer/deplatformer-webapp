@@ -7,6 +7,7 @@ from datetime import datetime
 import ftfy
 from flask import app
 from werkzeug.utils import secure_filename
+from sqlalchemy import desc, asc
 
 from deplatformer_webapp.models.facebook import Media
 
@@ -14,9 +15,7 @@ from ..app import db as appdb
 from ..models import facebook
 
 
-def activate_hyperlinks(
-    post,
-):
+def activate_hyperlinks(post,):
 
     post_length = len(post)
     post_slice = post
@@ -31,28 +30,17 @@ def activate_hyperlinks(
         if http == -1:
             break
 
-        for i in range(
-            http,
-            slice_length,
-        ):
+        for i in range(http, slice_length,):
             url += post_slice[i]
             if i == slice_length - 1:
                 break
             if post_slice[i + 1] == " ":
                 break
 
-        post = post.replace(
-            url,
-            "<a href='" + url + "'>" + url + "</a>",
-        )
+        post = post.replace(url, "<a href='" + url + "'>" + url + "</a>",)
         url_count += 1
 
-        post_slice = post_slice[
-            slice(
-                i + 1,
-                post_length,
-            )
-        ]
+        post_slice = post_slice[slice(i + 1, post_length,)]
         slice_length = len(post_slice)
 
     return (
@@ -61,9 +49,7 @@ def activate_hyperlinks(
     )
 
 
-def cut_hyperlinks(
-    post,
-):
+def cut_hyperlinks(post,):
 
     post_length = len(post)
     post_slice = post
@@ -77,28 +63,17 @@ def cut_hyperlinks(
         if http == -1:
             break
 
-        for i in range(
-            http,
-            slice_length,
-        ):
+        for i in range(http, slice_length,):
             url += post_slice[i]
             if i == slice_length - 1:
                 break
             if post_slice[i + 1] == " ":
                 break
 
-        post = post.replace(
-            url,
-            "",
-        )
+        post = post.replace(url, "",)
         urls.append(url)
 
-        post_slice = post_slice[
-            slice(
-                i + 1,
-                post_length,
-            )
-        ]
+        post_slice = post_slice[slice(i + 1, post_length,)]
         slice_length = len(post_slice)
 
     return (
@@ -107,9 +82,7 @@ def cut_hyperlinks(
     )
 
 
-def clean_nametags(
-    post,
-):
+def clean_nametags(post,):
 
     post_length = len(post)
     post_slice = post
@@ -124,10 +97,7 @@ def clean_nametags(
         if nametag == -1:
             break
 
-        for i in range(
-            nametag,
-            slice_length,
-        ):
+        for i in range(nametag, slice_length,):
             tagged_name += post_slice[i]
             if i == slice_length - 1:
                 break
@@ -137,47 +107,24 @@ def clean_nametags(
                     tagged_name += post_slice[i + 1]
                     break
 
-        post = post.replace(
-            tagged_name,
-            "",
-        )
+        post = post.replace(tagged_name, "",)
 
-        post_slice = post_slice[
-            slice(
-                i + 2,
-                post_length,
-            )
-        ]
+        post_slice = post_slice[slice(i + 2, post_length,)]
         name_end = post_slice.find("]")
 
-        name = post_slice[
-            slice(
-                0,
-                name_end,
-            )
-        ]
+        name = post_slice[slice(0, name_end,)]
 
-        post = post.replace(
-            name + "]",
-            "<span class='name'>" + name + "</span>",
-        )
+        post = post.replace(name + "]", "<span class='name'>" + name + "</span>",)
 
-        post_slice = post_slice[
-            slice(
-                name_end + 1,
-                post_length,
-            )
-        ]
+        post_slice = post_slice[slice(name_end + 1, post_length,)]
         slice_length = len(post_slice)
         colon_count = 0
 
     return post
 
 
-def posts_to_db(fb_dir, db_name):
+def posts_to_db(fb_dir):
     print("Parsing Facebook content.")
-    db = sqlite3.connect(db_name)
-    cursor = db.cursor()
 
     # Add albums with media files first so they can be referenced from posts
     albums_to_db(fb_dir)
@@ -212,10 +159,7 @@ def posts_to_db(fb_dir, db_name):
 
                 try:
                     attachment_sections = len(content["attachments"])
-                    for i in range(
-                        0,
-                        attachment_sections,
-                    ):
+                    for i in range(0, attachment_sections,):
                         if i == 0:
                             try:
                                 url = content["attachments"][0]["data"][0]["external_context"]["url"]
@@ -251,85 +195,55 @@ def posts_to_db(fb_dir, db_name):
                 profile_update = False
 
                 if timestamp is not None:
-                    cursor.executemany(
-                        "INSERT INTO posts (timestamp, post, url, url_label, place_name, address, latitude, longitude, profile_update) VALUES (?,?,?,?,?,?,?,?,?)",
-                        [
-                            (
-                                timestamp,
-                                post,
-                                url,
-                                url_label,
-                                place_name,
-                                address,
-                                latitude,
-                                longitude,
-                                profile_update,
-                            )
-                        ],
+                    fb_post = facebook.Post(
+                        timestamp=timestamp,
+                        post=post,
+                        url=url,
+                        url_label=url_label,
+                        place_name=place_name,
+                        address=address,
+                        latitude=latitude,
+                        longitude=longitude,
+                        profile_update=profile_update
                     )
-                    db.commit()
+                    appdb.session.add(fb_post )
+                    appdb.session.commit()
 
                     # Get current post_id
-                    cursor.execute("SELECT last_insert_rowid()")
-                    post_id = cursor.fetchone()
+                    post_id = fb_post.id
 
                 try:
                     attachments = content["attachments"][0]["data"]
                     count = len(attachments)
 
-                    for i in range(
-                        0,
-                        count,
-                    ):
+                    for i in range(0, count,):
                         attachment = content["attachments"][0]["data"][i]
-                        for (
-                            key,
-                            value,
-                        ) in attachment.items():
+                        for (key, value,) in attachment.items():
                             if key == "media":
                                 try:
                                     # match filepath to an existing media record
                                     filepath = value["uri"]
-                                    cursor.execute(
-                                        "SELECT id FROM media where filepath=?",
-                                        (filepath,),
-                                    )
-                                    media_file = cursor.fetchone()
+                                    media_file = facebook.Media.query.filter_by(filepath=filepath).first().id
                                     # Update media record with post_id
-                                    cursor.execute(
-                                        "UPDATE media SET post_id=? WHERE id=?",
-                                        (
-                                            post_id[0],
-                                            media_file[0],
-                                        ),
-                                    )
-                                    db.commit()
+                                    media_obj = facebook.Media.query.filter_by(id=media_file)
+                                    media_obj.post_id = post_id
+                                    appdb.session.commit()
 
                                 except Exception as e:
-                                    print(str(post_id[0]) + ": media file not found")
+                                    print(str(post_id) + ": media file not found")
 
                     # Count total number of media files for this post
-                    cursor.execute(
-                        "SELECT COUNT(id) FROM media WHERE post_id=?",
-                        (int(post_id[0]),),
-                    )
-                    total_files = cursor.fetchone()
+                    total_files = len(facebook.Media.query.filter_by(post_id=post_id).all())
+                    
                     # Update post record with number of media files
-                    cursor.execute(
-                        "UPDATE posts SET media_files=? WHERE id=?",
-                        (
-                            total_files[0],
-                            post_id[0],
-                        ),
-                    )
-                    db.commit()
+                    fb_post.media_files = total_files
+                    appdb.session.commit() 
 
                 except:
                     pass
 
     # Count total number of posts
-    cursor.execute("SELECT COUNT(id) FROM posts")
-    subtotal_posts = cursor.fetchone()
+    subtotal_posts = len(facebook.Post.query.all())
 
     print("Adding profile updates.")
 
@@ -342,96 +256,58 @@ def posts_to_db(fb_dir, db_name):
         try:
             # Check whether the update is linked to a media file, if not, loop will continue
             filepath = update["attachments"][0]["data"][0]["media"]["uri"]
-            cursor.execute(
-                "SELECT id, post_id, timestamp, description FROM media where filepath=?",
-                (filepath,),
-            )
-            media_file = cursor.fetchone()
-            if media_file[0] == None:
+            media_obj = facebook.Media.query.filter_by(filepath=filepath).first()
+            if media_obj == None:
                 # Update is not linked to a media file
                 continue
-            if media_file[1] != None:
-                # Media file is already linked to a post, we need to create a new media file stub later
-                new_media = True
-            else:
-                new_media = False
+            new_media = media_obj.post_id != None
+    
             # Get profile update metadata
-            try:
-                unix_time = update["timestamp"]
-                timestamp = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S")
-            except:
-                timestamp = None
-            try:
-                title = update["title"]
-            except:
-                title = None
+            unix_time = update.get("timestamp", None)
+            timestamp = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S") if unix_time else None
+            title = update.get("title", None)
 
             # Save profile update as post
-            cursor.executemany(
-                "INSERT INTO posts (timestamp, post, media_files, profile_update) VALUES (?,?,?,?)",
-                [
-                    (
-                        timestamp,
-                        title,
-                        1,
-                        True,
-                    )
-                ],
-            )
-            db.commit()
+            new_post = facebook.Post(timestamp=timestamp, post=title, media_files=1, profile_update=True)
+            appdb.session.add(new_post)
+            appdb.session.commit()
 
-            # Get current post_id
-            cursor.execute("SELECT last_insert_rowid()")
-            post_id = cursor.fetchone()
-
+            post_id = new_post.id
+            
             try:
                 if new_media == False:
                     # Update existing media record with post_id
-                    cursor.execute(
-                        "UPDATE media SET post_id=? WHERE id=?",
-                        (
-                            post_id[0],
-                            media_file[0],
-                        ),
-                    )
+                    media_obj.post_id = post_id
                 else:
-                    # Create new media record to link post to. Don't duplicate the album link.
-                    cursor.execute(
-                        "INSERT INTO media (timestamp, description, filepath, post_id) VALUES (?,?,?,?)",
-                        (
-                            media_file[2],
-                            media_file[3],
-                            filepath,
-                            post_id[0],
-                        ),
+                    new_media_obj = facebook.Media(
+                        timestamp=media_obj.timestamp,
+                        description=media_obj.description,
+                        filepath=filepath,
+                        post_id=post_id,
                     )
-                db.commit()
+                    appdb.session.add(new_media_obj)
+                appdb.session.commit()
             except Exception as e:
                 print("couldn't update media file with post id")
                 print(e)
-
         except:
             # Profile update does not have a media file attached, so don't include it
             continue
 
     # Recount total number of posts
-    cursor.execute("SELECT COUNT(id) FROM posts")
-    total_posts = cursor.fetchone()
+    total_posts = len(facebook.Post.query.all())
 
     # Calculate total number of profile updates
-    profile_updates = total_posts[0] - subtotal_posts[0]
+    profile_updates = total_posts - subtotal_posts
 
     # Get latest post date
-    cursor.execute("SELECT MAX(date(timestamp)) from posts")
-    max_date = cursor.fetchone()
+    max_date = facebook.Post.query.order_by(desc('timestamp')).first().timestamp
 
     # Get first post date
-    cursor.execute("SELECT MIN(date(timestamp)) from posts")
-    min_date = cursor.fetchone()
+    min_date = facebook.Post.query.order_by(asc('timestamp')).first().timestamp
 
     # Count total number of media files
-    cursor.execute("SELECT COUNT(id) FROM media")
-    total_media = cursor.fetchone()
+    total_media = len(facebook.Media.query.all())
 
     return (
         total_posts,
@@ -442,10 +318,7 @@ def posts_to_db(fb_dir, db_name):
     )
 
 
-def albums_to_db(
-    fb_dir,
-    db_name,
-):
+def albums_to_db(fb_dir):
     # FB includes one JSON file per album
     files = os.listdir(fb_dir + "/photos_and_videos/album/")
     for file in files:
@@ -577,18 +450,12 @@ def create_user_dirs(user, base_path):
         os.makedirs(upload_path)
 
     # Create a subdirectory per username. Usernames are unique.
-    user_dir = os.path.join(
-        upload_path,
-        str(user.id) + "-" + user.username,
-    )
+    user_dir = os.path.join(upload_path, str(user.id) + "-" + user.username,)
     if not os.path.exists(user_dir):
         os.makedirs(user_dir)
 
     # Create a Facebook subdirectory.
-    facebook_dir = os.path.join(
-        user_dir,
-        "facebook",
-    )
+    facebook_dir = os.path.join(user_dir, "facebook",)
     if os.path.exists(facebook_dir):
         # Remove an existing directory to avoid dbase entry duplication
         shutil.rmtree(facebook_dir)
@@ -599,10 +466,5 @@ def create_user_dirs(user, base_path):
 def save_upload_file(upload_file, directory):
     file_name = secure_filename(upload_file.filename)
     print("Saving uploaded file")  # TODO: move to async user output
-    upload_file.save(
-        os.path.join(
-            directory,
-            file_name,
-        )
-    )
+    upload_file.save(os.path.join(directory, file_name,))
     return file_name

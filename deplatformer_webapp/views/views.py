@@ -6,6 +6,7 @@ from flask_user import current_user, login_required
 
 from ..app import app, db
 from ..models.user_models import UserDirectories, User
+from ..models import facebook
 from ..crypto import create_user_key_if_not_exists
 
 @app.route("/")
@@ -32,23 +33,18 @@ def userfile(
     if directory is None:
         return "File not found."
 
-    try:
-        db = sqlite3.connect(app.config["PLATFORM_DBS"][platform])
-        cursor = db.cursor()
-        cursor.execute(
-            "SELECT filepath FROM media WHERE id = ?",
-            (int(file_id),),
-        )
-        filepath = cursor.fetchone()
-    except Exception as e:
-        print(e)
+    filepath = None
+    if platform == "facebook":
+        filepath = facebook.Media.query.filter_by(id=file_id).first().filepath    
+    
+    if filepath is None:
         return "File not found."
-
-    split = os.path.split(filepath[0])
+    
+    split = os.path.split(filepath)
     filename = split[1]
     fullpath = os.path.join(app.config["USER_DATA_DIR"], directory.directory, split[0])
-    return send_from_directory(fullpath, filename)
 
+    return send_from_directory(fullpath, filename)
 
 @app.route("/instagram")
 @login_required

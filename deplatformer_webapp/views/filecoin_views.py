@@ -1,9 +1,12 @@
 import os
+import traceback
 from datetime import datetime
 
 from flask import flash, render_template, safe_join, send_file
 from flask_user import current_user, login_required
 from pygate_grpc.client import PowerGateClient
+
+from deplatformer_webapp.crypto import decrypt, decrypt_file, derive_key_from_usercreds
 
 from ..app import app, db
 from ..models.filecoin_models import FfsUser, Files, Logs
@@ -70,16 +73,18 @@ def filecoin_download(
         )
         if not os.path.exists(filecoin_dir):
             os.makedirs(filecoin_dir)
-        print(filecoin_dir)
+
+        file_destination = os.path.join(filecoin_dir, file.file_name)
+        derived_user_key = derive_key_from_usercreds(
+            current_user.username.encode("utf-8"), current_user.password.encode("utf-8")
+        )
+        decrypted_data = decrypt(data, derived_user_key)
         with open(
-            os.path.join(
-                filecoin_dir,
-                file.file_name,
-            ),
+            file_destination,
             "wb",
         ) as out_file:
             # Iterate over the data byte chunks and save them to an output file
-            out_file.write(data)
+            out_file.write(decrypted_data)
 
         # Create path to download file
         safe_path = safe_join(filecoin_dir, file.file_name)
@@ -95,6 +100,8 @@ def filecoin_download(
 
     except Exception as e:
         # Output error message if download from Filecoin fails
+        tb = traceback.TracebackException.from_exception(e)
+        print("".join(tb.format()))
         flash(
             "failed to download '{}' from Filecoin. {}".format(
                 file.file_name,

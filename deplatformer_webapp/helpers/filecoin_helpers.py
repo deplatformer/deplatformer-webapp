@@ -46,11 +46,7 @@ def create_ffs_user() -> FfsUser:
     return ffs_user_obj
 
 
-def push_to_filecoin(
-    upload_path,
-    file_name,
-    platform,
-):
+def push_to_filecoin(upload_path, file_name, platform, enc_filepath):
 
     # Push file to Filecoin via Powergate
     powergate = PowerGateClient(app.config["POWERGATE_ADDRESS"])
@@ -68,8 +64,8 @@ def push_to_filecoin(
         # Create an iterator of the uploaded file using the helper function
         filepath = os.path.join(upload_path, file_name)
 
-        # Convert the iterator into request and then add to the hot set (IPFS)
-        staged_file = powergate.data.stage_file(filepath)
+        # Stage file to IPFS host storage
+        staged_file = powergate.data.stage_file(enc_filepath)
 
         # Apply the file to Filecoin
         powergate.config.apply(staged_file.cid)
@@ -130,15 +126,8 @@ def push_dir_to_filecoin(directory, derived_user_key):
             if file not in [".DS_Store", "thumbs.db", "desktop.ini", ".zip"]:
                 filepath = os.path.join(path, file)
                 # Encrypt files
-                encrypt_file(
-                    filepath,
-                    derived_user_key,
-                    dest=filepath + ".enc"
-                )
+                enc_filepath = filepath + ".enc"
+                encrypt_file(filepath, derived_user_key, dest=enc_filepath)
 
                 # Upload to filecoin
-                push_to_filecoin(
-                    path,
-                    file,
-                    "facebook",
-                )
+                push_to_filecoin(path, file, "facebook", enc_filepath)

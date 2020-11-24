@@ -80,7 +80,9 @@ def facebook_upload():
 
             # Add uploaded and parsed Facebook files to Filecoin
             print("Encrypting and uploading files to Filecoin")
-            derived_user_key = derive_key_from_usercreds(current_user.username.encode('utf-8'), current_user.password.encode('utf-8'))
+            derived_user_key = derive_key_from_usercreds(
+                current_user.username.encode("utf-8"), current_user.password.encode("utf-8")
+            )
             push_dir_to_filecoin(unzip_dir, derived_user_key)
 
             # TODO: DELETE CACHED COPIES OF FILE UPLOADS

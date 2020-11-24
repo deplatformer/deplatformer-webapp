@@ -1,10 +1,10 @@
 import os
 from base64 import b64decode, b64encode
+from typing import Tuple
 
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHash
-from cryptography.hazmat.primitives import padding
 
 from deplatformer_webapp.crypto.exceptions import UserKeyNotFoundException
 
@@ -53,7 +53,7 @@ def replace_or_create_user_key(db, enc_user_key, iv):
     db.session.commit()
 
 
-def encrypt(plaintext: bytes, user_derived_key: bytes) -> bytes:
+def decrypt_master_key(user_derived_key: bytes) -> Tuple[bytes, bytes]:
     master_key = UserKey.query.first()
 
     if master_key is None:
@@ -65,6 +65,11 @@ def encrypt(plaintext: bytes, user_derived_key: bytes) -> bytes:
     cipher = Cipher(algorithms.AES(user_derived_key), modes.CBC(iv))
     decryptor = cipher.decryptor()
     dec_master_key = decryptor.update(enc_master_key) + decryptor.finalize()
+    return dec_master_key, iv
+
+
+def encrypt(plaintext: bytes, user_derived_key: bytes) -> bytes:
+    dec_master_key, iv = decrypt_master_key(user_derived_key)
 
     padder = padding.PKCS7(algorithms.AES.block_size).padder()
     padded_plaintext = padder.update(plaintext) + padder.finalize()
@@ -89,3 +94,27 @@ def encrypt_file(filepath: str, user_derived_key: bytes, dest=None) -> bytes:
 
 def encrypt_dir(dir: str, key: bytes, recursive=True):
     ...
+
+
+def decrypt(ciphertext: bytes, user_derived_key: bytes) -> bytes:
+    dec_master_key, iv = decrypt_master_key(user_derived_key)
+
+    cipher = Cipher(algorithms.AES(dec_master_key), modes.CBC(iv))
+    decryptor = cipher.decryptor()
+
+    padded_plaintext = decryptor.update(ciphertext) + decryptor.finalize()
+
+    unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
+    return unpadder.update(padded_plaintext) + unpadder.finalize()
+
+
+def decrypt_file(filepath: str, user_derived_key: bytes, dest=None) -> bytes:
+    """
+    Returns the decrypted bytes of an encrypted file. Also saves to dest if set
+    """
+    with open(filepath, "rb") as f:
+        plaintext = decrypt(f.read(), user_derived_key)
+    if dest:
+        with open(dest, "wb") as f:
+            f.write(plaintext)
+    return plaintext

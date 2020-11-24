@@ -58,7 +58,7 @@ monotonic = "1.5"
 urllib3= "1.25.11"
 passlib = "1.7.2"
 pycparser = "2.20"
-pygate-grpc = "0.0.14"
+pygate-grpc = "1.0.1"
 python-engineio = "3.13.2"
 python-socketio = "4.6.0"
 six = "1.15.0"
@@ -87,8 +87,8 @@ lint = 'deplatformer_webapp.scripts:lint'
 dropdb = 'deplatformer_webapp.scripts:dropdb'
 
 [tool.black]
-line-length = 120
-target-version = ['py37']
+line-length=120
+target-version = ['py38']
 include = '\.pyi?$'
 exclude = '''
 (

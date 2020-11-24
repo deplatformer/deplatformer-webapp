@@ -80,3 +80,5 @@ _meta
 
 # Include migrations
 !**/*/env.py
+
+versions_bkp

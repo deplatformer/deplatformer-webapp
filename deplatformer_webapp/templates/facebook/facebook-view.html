@@ -25,18 +25,18 @@
 
   <div class="col">
 
-    <a href="/facebook-album/{{ album[0] }}">
+    <a href="/facebook-album/{{ album.id }}">
     <div class="card" style="margin-top: 30px; text-align:center">
-      {% if album[2] == "Videos" %}
+      {% if album.name == "Videos" %}
        <div class="embed-responsive embed-responsive-4by3">
-         <video controls><source src="/userfile/facebook/{{ album[5] }}" /></video>
+         <video controls><source src="/userfile/facebook/{{ album.cover_photo_id }}" /></video>
         </div>
       {% else %}
-        <img class="card-img-top img-fluid" src="/userfile/facebook/{{ album[5] }}" alt="Card image cap">
+        <img class="card-img-top img-fluid" src="/userfile/facebook/{{ album.cover_photo_id }}" alt="Card image cap">
       {% endif %}
       <div class="card-body">
-          <p class="card-text">{{ album[2] }}</p> </a>
-          <p class="card-text small_note">  {{ album[4]}} files</p>
+          <p class="card-text">{{ album.name }}</p> </a>
+          <p class="card-text small_note">  {{ album.total_files}} files</p>
       </div>
     </div>
  

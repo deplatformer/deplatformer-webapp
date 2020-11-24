@@ -18,10 +18,10 @@ def derive_key_from_usercreds(username, password, length=32):
 
 
 def generate_new_user_key(username, password):
-    if type(username)== str:
-        username = username.encode('utf-8')
-    if type(password)== str:
-        password = password.encode('utf-8')
+    if type(username) == str:
+        username = username.encode("utf-8")
+    if type(password) == str:
+        password = password.encode("utf-8")
 
     iv = os.urandom(16)
     cipher = Cipher(algorithms.AES(derive_key_from_usercreds(username, password)), modes.CBC(iv))
@@ -29,13 +29,15 @@ def generate_new_user_key(username, password):
     encrypted_user_key = encryptor.update(os.urandom(32)) + encryptor.finalize()
     return encrypted_user_key, iv
 
+
 def create_user_key_if_not_exists(username, password, db):
     user_keys = UserKey.query.all()
     if len(user_keys) == 0:
-        enc_user_key, iv = generate_new_user_key(username, password) 
+        enc_user_key, iv = generate_new_user_key(username, password)
         user_key = UserKey(encrypted_key=b64encode(enc_user_key), iv=b64encode(iv))
         db.session.add(user_key)
     db.session.commit()
+
 
 def replace_or_create_user_key(db, enc_user_key, iv):
     user_keys = UserKey.query.all()
@@ -46,3 +48,6 @@ def replace_or_create_user_key(db, enc_user_key, iv):
         user_key = UserKey(encrypted_key=enc_user_key, iv=iv)
         db.session.add(user_key)
     db.session.commit()
+
+def encrypt_dir(recursive=True):
+    ...

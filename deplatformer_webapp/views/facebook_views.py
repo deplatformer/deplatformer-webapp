@@ -1,13 +1,15 @@
 import os
 import sqlite3
-import zipfile
 import traceback
+import zipfile
 from datetime import datetime
 
 from flask import flash, render_template, request
 from flask_user import current_user, login_required
 from pygate_grpc.exceptions import GRPCNotAvailableException
 from sqlalchemy import desc
+
+from deplatformer_webapp.crypto import derive_key_from_usercreds
 
 from ..app import app, db
 from ..helpers import unzip
@@ -77,8 +79,9 @@ def facebook_upload():
             upload_success = True
 
             # Add uploaded and parsed Facebook files to Filecoin
-            print("Uploading files to Filecoin")
-            push_dir_to_filecoin(unzip_dir)
+            print("Encrypting and uploading files to Filecoin")
+            derived_user_key = derive_key_from_usercreds(current_user.username.encode('utf-8'), current_user.password.encode('utf-8'))
+            push_dir_to_filecoin(unzip_dir, derived_user_key)
 
             # TODO: DELETE CACHED COPIES OF FILE UPLOADS
 

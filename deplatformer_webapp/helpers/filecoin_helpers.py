@@ -7,6 +7,7 @@ from google.protobuf.json_format import MessageToDict
 from pygate_grpc.client import PowerGateClient
 
 from ..app import app, db
+from ..crypto import encrypt, encrypt_file
 from ..models.filecoin_models import FfsUser, Files, Logs, Wallets
 
 
@@ -24,13 +25,21 @@ def create_ffs_user() -> FfsUser:
     creation_date = datetime.now().replace(microsecond=0)
     # TODO salt token id
     ffs_user_obj = FfsUser(
-        ffs_userid=ffs_user.id, token=ffs_user.token, creation_date=creation_date, user_id=current_user.id,
+        ffs_userid=ffs_user.id,
+        token=ffs_user.token,
+        creation_date=creation_date,
+        user_id=current_user.id,
     )
     db.session.add(ffs_user_obj)
 
     # Create new FFS wallet and add entry in log table
     address = powergate.wallet.addresses()[0].address
-    wallet = Wallets(created=creation_date, address=address, ffs=ffs_user.id, user_id=current_user.id,)
+    wallet = Wallets(
+        created=creation_date,
+        address=address,
+        ffs=ffs_user.id,
+        user_id=current_user.id,
+    )
     db.session.add(wallet)
     db.session.commit()
 
@@ -38,7 +47,9 @@ def create_ffs_user() -> FfsUser:
 
 
 def push_to_filecoin(
-    upload_path, file_name, platform,
+    upload_path,
+    file_name,
+    platform,
 ):
 
     # Push file to Filecoin via Powergate
@@ -86,7 +97,11 @@ def push_to_filecoin(
         # Output error message if pushing to Filecoin fails
         print("Failed to upload {0} to Filecoin.".format(file_name))
         flash(
-            "'{}' failed to upload to Filecoin. {}.".format(file_name, e,), "alert-danger",
+            "'{}' failed to upload to Filecoin. {}.".format(
+                file_name,
+                e,
+            ),
+            "alert-danger",
         )
 
         # Update log table with error
@@ -104,11 +119,26 @@ def push_to_filecoin(
     return ()
 
 
-def push_dir_to_filecoin(directory):
-    for (path, subdirectory, files,) in os.walk(directory):
+def push_dir_to_filecoin(directory, derived_user_key):
+    for (
+        path,
+        subdirectory,
+        files,
+    ) in os.walk(directory):
         for file in files:
             print(file)
             if file not in [".DS_Store", "thumbs.db", "desktop.ini", ".zip"]:
+                filepath = os.path.join(path, file)
+                # Encrypt files
+                encrypt_file(
+                    filepath,
+                    derived_user_key,
+                    dest=filepath + ".enc"
+                )
+
+                # Upload to filecoin
                 push_to_filecoin(
-                    path, file, "facebook",
+                    path,
+                    file,
+                    "facebook",
                 )

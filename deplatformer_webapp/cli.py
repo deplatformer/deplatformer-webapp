@@ -93,4 +93,4 @@ def makemigrations():
 
     with app.app_context():
         cwd = os.path.abspath(os.path.dirname(__file__))
-        migrate(directory=os.path.join(cwd,"migrations"))
+        migrate(directory=os.path.join(cwd, "migrations"))

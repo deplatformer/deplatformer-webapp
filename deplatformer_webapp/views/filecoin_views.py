@@ -1,12 +1,15 @@
 import os
+import traceback
 from datetime import datetime
 
 from flask import flash, render_template, safe_join, send_file
 from flask_user import current_user, login_required
 from pygate_grpc.client import PowerGateClient
 
+from deplatformer_webapp.crypto import decrypt, decrypt_file, derive_key_from_usercreds
+
 from ..app import app, db
-from ..models.filecoin_models import Ffs, Files, Logs
+from ..models.filecoin_models import FfsUser, Files, Logs
 
 
 @app.route("/filecoin-files")
@@ -40,15 +43,13 @@ def filecoin_download(
         CID=cid,
         user_id=current_user.id,
     ).first()
-    ffs = Ffs.query.get(file.ffs_id)
+    ffs_user = FfsUser.query.get(file.ffs_id)
 
     try:
         # Retrieve data from Filecoin
         powergate = PowerGateClient(app.config["POWERGATE_ADDRESS"])
-        data_ = powergate.ffs.get(
-            file.CID,
-            ffs.token,
-        )
+        powergate.set_token(ffs_user.token)
+        data = powergate.data.get(file.CID)
 
         # Save the downloaded data as a file
         # Use the user data directory configured for the app
@@ -72,23 +73,21 @@ def filecoin_download(
         )
         if not os.path.exists(filecoin_dir):
             os.makedirs(filecoin_dir)
-        print(filecoin_dir)
+
+        file_destination = os.path.join(filecoin_dir, file.file_name)
+        derived_user_key = derive_key_from_usercreds(
+            current_user.username.encode("utf-8"), current_user.password.encode("utf-8")
+        )
+        decrypted_data = decrypt(data, derived_user_key)
         with open(
-            os.path.join(
-                filecoin_dir,
-                file.file_name,
-            ),
+            file_destination,
             "wb",
         ) as out_file:
             # Iterate over the data byte chunks and save them to an output file
-            for data in data_:
-                out_file.write(data)
+            out_file.write(decrypted_data)
 
         # Create path to download file
-        safe_path = safe_join(
-            "../" + filecoin_dir,
-            file.file_name,
-        )
+        safe_path = safe_join(filecoin_dir, file.file_name)
         print(safe_path)
 
         # Offer the file for download to local machine
@@ -101,6 +100,8 @@ def filecoin_download(
 
     except Exception as e:
         # Output error message if download from Filecoin fails
+        tb = traceback.TracebackException.from_exception(e)
+        print("".join(tb.format()))
         flash(
             "failed to download '{}' from Filecoin. {}".format(
                 file.file_name,
@@ -138,7 +139,8 @@ def filecoin_wallets():
     powergate = PowerGateClient(app.config["POWERGATE_ADDRESS"])
 
     try:
-        ffs = Ffs.query.filter_by(user_id=current_user.id).one()
+        ffs_user = FfsUser.query.filter_by(user_id=current_user.id).one()
+        powergate.set_token(ffs_user.token)
     except:
         flash(
             "No wallets created yet.",
@@ -152,13 +154,13 @@ def filecoin_wallets():
 
     wallets = []
 
-    addresses = powergate.ffs.addrs_list(ffs.token)
+    addresses = powergate.wallet.addresses()
 
-    for address in addresses.addrs:
-        balance = powergate.wallet.balance(address.addr)
+    for address in addresses:
+        balance = powergate.wallet.balance(address)
         wallets.append(
             {
-                "ffs": ffs.ffs_id,
+                "ffs": ffs_user.ffs_userid,
                 "name": address.name,
                 "address": address.addr,
                 "type": address.type,

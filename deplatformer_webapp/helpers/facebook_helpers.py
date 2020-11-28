@@ -1,13 +1,13 @@
 import json
 import os
+import re
 import shutil
-import sqlite3
 from datetime import datetime
 
 import ftfy
 from flask import app
+from sqlalchemy import asc, desc
 from werkzeug.utils import secure_filename
-from sqlalchemy import desc, asc
 
 from deplatformer_webapp.models.facebook import Media
 
@@ -15,74 +15,30 @@ from ..app import db as appdb
 from ..models import facebook
 
 
-def activate_hyperlinks(post,):
-
-    post_length = len(post)
-    post_slice = post
-    slice_length = post_length
-    i = 0
-    url_count = 0
-
-    while i < post_length:
-        url = ""
-        http = post_slice.find("http")
-
-        if http == -1:
-            break
-
-        for i in range(http, slice_length,):
-            url += post_slice[i]
-            if i == slice_length - 1:
-                break
-            if post_slice[i + 1] == " ":
-                break
-
-        post = post.replace(url, "<a href='" + url + "'>" + url + "</a>",)
-        url_count += 1
-
-        post_slice = post_slice[slice(i + 1, post_length,)]
-        slice_length = len(post_slice)
-
-    return (
-        post,
-        url_count,
-    )
+def activate_hyperlinks(
+    post,
+):
+    urls = re.findall(r"(https?://\S+)", post)
+    for url in urls:
+        post = post.replace(url, "")
+    return post, len(urls)
 
 
-def cut_hyperlinks(post,):
-
-    post_length = len(post)
-    post_slice = post
-    slice_length = post_length
-    i = 0
-    urls = []
-    while i < post_length:
-        url = ""
-        http = post_slice.find("http")
-
-        if http == -1:
-            break
-
-        for i in range(http, slice_length,):
-            url += post_slice[i]
-            if i == slice_length - 1:
-                break
-            if post_slice[i + 1] == " ":
-                break
-
-        post = post.replace(url, "",)
-        urls.append(url)
-
-        post_slice = post_slice[slice(i + 1, post_length,)]
-        slice_length = len(post_slice)
-
-    return (
-        post,
-        urls,
-    )
+def cut_hyperlinks(
+    post,
+):
+    urls = re.findall(r"(https?://\S+)", post)
+    cleaned_post, start = post, 0
+    for url in urls:
+        idx = post.find(url, start)
+        cleaned_post += post[:idx] + post[idx + len(url) :]
+        start = idx + len(url)
+    return cleaned_post, urls
 
 
-def clean_nametags(post,):
+def clean_nametags(
+    post,
+):
 
     post_length = len(post)
     post_slice = post
@@ -97,7 +53,10 @@ def clean_nametags(post,):
         if nametag == -1:
             break
 
-        for i in range(nametag, slice_length,):
+        for i in range(
+            nametag,
+            slice_length,
+        ):
             tagged_name += post_slice[i]
             if i == slice_length - 1:
                 break
@@ -107,16 +66,37 @@ def clean_nametags(post,):
                     tagged_name += post_slice[i + 1]
                     break
 
-        post = post.replace(tagged_name, "",)
+        post = post.replace(
+            tagged_name,
+            "",
+        )
 
-        post_slice = post_slice[slice(i + 2, post_length,)]
+        post_slice = post_slice[
+            slice(
+                i + 2,
+                post_length,
+            )
+        ]
         name_end = post_slice.find("]")
 
-        name = post_slice[slice(0, name_end,)]
+        name = post_slice[
+            slice(
+                0,
+                name_end,
+            )
+        ]
 
-        post = post.replace(name + "]", "<span class='name'>" + name + "</span>",)
+        post = post.replace(
+            name + "]",
+            "<span class='name'>" + name + "</span>",
+        )
 
-        post_slice = post_slice[slice(name_end + 1, post_length,)]
+        post_slice = post_slice[
+            slice(
+                name_end + 1,
+                post_length,
+            )
+        ]
         slice_length = len(post_slice)
         colon_count = 0
 
@@ -159,7 +139,10 @@ def posts_to_db(fb_dir):
 
                 try:
                     attachment_sections = len(content["attachments"])
-                    for i in range(0, attachment_sections,):
+                    for i in range(
+                        0,
+                        attachment_sections,
+                    ):
                         if i == 0:
                             try:
                                 url = content["attachments"][0]["data"][0]["external_context"]["url"]
@@ -204,9 +187,9 @@ def posts_to_db(fb_dir):
                         address=address,
                         latitude=latitude,
                         longitude=longitude,
-                        profile_update=profile_update
+                        profile_update=profile_update,
                     )
-                    appdb.session.add(fb_post )
+                    appdb.session.add(fb_post)
                     appdb.session.commit()
 
                     # Get current post_id
@@ -216,9 +199,15 @@ def posts_to_db(fb_dir):
                     attachments = content["attachments"][0]["data"]
                     count = len(attachments)
 
-                    for i in range(0, count,):
+                    for i in range(
+                        0,
+                        count,
+                    ):
                         attachment = content["attachments"][0]["data"][i]
-                        for (key, value,) in attachment.items():
+                        for (
+                            key,
+                            value,
+                        ) in attachment.items():
                             if key == "media":
                                 try:
                                     # match filepath to an existing media record
@@ -234,10 +223,10 @@ def posts_to_db(fb_dir):
 
                     # Count total number of media files for this post
                     total_files = len(facebook.Media.query.filter_by(post_id=post_id).all())
-                    
+
                     # Update post record with number of media files
                     fb_post.media_files = total_files
-                    appdb.session.commit() 
+                    appdb.session.commit()
 
                 except:
                     pass
@@ -261,7 +250,7 @@ def posts_to_db(fb_dir):
                 # Update is not linked to a media file
                 continue
             new_media = media_obj.post_id != None
-    
+
             # Get profile update metadata
             unix_time = update.get("timestamp", None)
             timestamp = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S") if unix_time else None
@@ -273,7 +262,7 @@ def posts_to_db(fb_dir):
             appdb.session.commit()
 
             post_id = new_post.id
-            
+
             try:
                 if new_media == False:
                     # Update existing media record with post_id
@@ -301,10 +290,10 @@ def posts_to_db(fb_dir):
     profile_updates = total_posts - subtotal_posts
 
     # Get latest post date
-    max_date = facebook.Post.query.order_by(desc('timestamp')).first().timestamp
+    max_date = facebook.Post.query.order_by(desc("timestamp")).first().timestamp
 
     # Get first post date
-    min_date = facebook.Post.query.order_by(asc('timestamp')).first().timestamp
+    min_date = facebook.Post.query.order_by(asc("timestamp")).first().timestamp
 
     # Count total number of media files
     total_media = len(facebook.Media.query.all())
@@ -336,7 +325,10 @@ def albums_to_db(fb_dir):
 
             # Save album info
             album = facebook.Album(
-                name=name, description=description, last_modified=last_modified, cover_photo_id=cover_photo
+                name=name,
+                description=description,
+                last_modified=last_modified,
+                cover_photo_id=cover_photo,
             )
             appdb.session.add(album)
             appdb.session.commit()
@@ -426,7 +418,10 @@ def albums_to_db(fb_dir):
                 description = video.get("description", None)
 
                 media = facebook.Media(
-                    timestamp=timestamp, description=description, filepath=filepath, album_id=album.id
+                    timestamp=timestamp,
+                    description=description,
+                    filepath=filepath,
+                    album_id=album.id,
                 )
                 appdb.session.add(media)
                 appdb.session.commit()
@@ -450,12 +445,18 @@ def create_user_dirs(user, base_path):
         os.makedirs(upload_path)
 
     # Create a subdirectory per username. Usernames are unique.
-    user_dir = os.path.join(upload_path, str(user.id) + "-" + user.username,)
+    user_dir = os.path.join(
+        upload_path,
+        str(user.id) + "-" + user.username,
+    )
     if not os.path.exists(user_dir):
         os.makedirs(user_dir)
 
     # Create a Facebook subdirectory.
-    facebook_dir = os.path.join(user_dir, "facebook",)
+    facebook_dir = os.path.join(
+        user_dir,
+        "facebook",
+    )
     if os.path.exists(facebook_dir):
         # Remove an existing directory to avoid dbase entry duplication
         shutil.rmtree(facebook_dir)
@@ -466,5 +467,10 @@ def create_user_dirs(user, base_path):
 def save_upload_file(upload_file, directory):
     file_name = secure_filename(upload_file.filename)
     print("Saving uploaded file")  # TODO: move to async user output
-    upload_file.save(os.path.join(directory, file_name,))
+    upload_file.save(
+        os.path.join(
+            directory,
+            file_name,
+        )
+    )
     return file_name

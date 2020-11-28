@@ -1,15 +1,15 @@
 """empty message
 
-Revision ID: 7e2b4a574825
+Revision ID: ee7c53956893
 Revises: 
-Create Date: 2020-11-13 00:04:08.149012
+Create Date: 2020-11-24 03:02:20.469566
 
 """
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '7e2b4a574825'
+revision = 'ee7c53956893'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -44,17 +44,17 @@ def upgrade_():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('username')
     )
-    op.create_table('ffs',
+    op.create_table('ffs_user',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('ffs_id', sa.String(length=36), nullable=True),
+    sa.Column('ffs_userid', sa.String(length=36), nullable=True),
     sa.Column('token', sa.String(length=36), nullable=True),
     sa.Column('creation_date', sa.DateTime(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_ffs_ffs_id'), 'ffs', ['ffs_id'], unique=False)
-    op.create_index(op.f('ix_ffs_token'), 'ffs', ['token'], unique=False)
+    op.create_index(op.f('ix_ffs_user_ffs_userid'), 'ffs_user', ['ffs_userid'], unique=False)
+    op.create_index(op.f('ix_ffs_user_token'), 'ffs_user', ['token'], unique=False)
     op.create_table('logs',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
@@ -90,7 +90,7 @@ def upgrade_():
     sa.Column('platform', sa.String(length=255), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('ffs_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['ffs_id'], ['ffs.id'], ),
+    sa.ForeignKeyConstraint(['ffs_id'], ['ffs_user.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -109,9 +109,9 @@ def downgrade_():
     op.drop_table('wallets')
     op.drop_table('user_directories')
     op.drop_table('logs')
-    op.drop_index(op.f('ix_ffs_token'), table_name='ffs')
-    op.drop_index(op.f('ix_ffs_ffs_id'), table_name='ffs')
-    op.drop_table('ffs')
+    op.drop_index(op.f('ix_ffs_user_token'), table_name='ffs_user')
+    op.drop_index(op.f('ix_ffs_user_ffs_userid'), table_name='ffs_user')
+    op.drop_table('ffs_user')
     op.drop_table('users')
     op.drop_table('user_key')
     # ### end Alembic commands ###

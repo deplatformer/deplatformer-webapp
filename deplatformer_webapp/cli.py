@@ -94,4 +94,5 @@ def makemigrations():
     from .app import app
 
     with app.app_context():
-        migrate(directory="migrations/{0}".format(app.config["ENV"]))
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        migrate(directory=os.path.join(cwd, "migrations"))

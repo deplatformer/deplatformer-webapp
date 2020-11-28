@@ -2,7 +2,7 @@ from ..app import db
 from .user_models import User
 
 
-class Ffs(db.Model):
+class FfsUser(db.Model):
     """
     Define the attributes for a Powergate Filecoin FileSystem
     """
@@ -11,7 +11,7 @@ class Ffs(db.Model):
         db.Integer(),
         primary_key=True,
     )
-    ffs_id = db.Column(
+    ffs_userid = db.Column(
         db.String(36),
         index=True,
     )
@@ -34,12 +34,12 @@ class Ffs(db.Model):
 
     def __init__(
         self,
-        ffs_id,
+        ffs_userid,
         token,
         creation_date,
         user_id,
     ):
-        self.ffs_id = ffs_id
+        self.ffs_userid = ffs_userid
         self.token = token
         self.creation_date = creation_date
         self.user_id = user_id
@@ -47,7 +47,7 @@ class Ffs(db.Model):
     def __repr__(
         self,
     ):
-        return self.ffs_id
+        return self.ffs_userid
 
 
 class Files(db.Model):
@@ -81,7 +81,7 @@ class Files(db.Model):
     )
     ffs_id = db.Column(
         db.Integer(),
-        db.ForeignKey(Ffs.id),
+        db.ForeignKey(FfsUser.id),
         nullable=False,
     )
 

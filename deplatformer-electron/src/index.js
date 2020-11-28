@@ -19,7 +19,7 @@ const createWindow = async () => {
   let python
   try {
     if (process.platform === 'linux') {
-      python = await spawn('../dist/deplatformer-linux/deplatformer'); //, ['script1.py']);
+      python = await spawn('../../dist/deplatformer-linux/deplatformer'); //, ['script1.py']);
       pids = pids.concat( [python] );
     } else {
       throw Error();
@@ -74,6 +74,26 @@ app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('activate', () => {
+  // On OS X it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  // if (BrowserWindow.getAllWindows().length === 0) {
+  //   createWindow();
+  // }
+});
+
+// App close handler
+app.on('before-quit', function() {
+});
+// In this file you can include the rest of your app's specific main process
+// code. You can also put them in separate files and import them here.
+
+// App close handler
+app.on('will-quit', function() {
+
+  console.log(process.platform);
   pids.forEach(async function(proc) {
     // A simple pid lookup
     // ps.kill( pid, function( err ) {
@@ -90,17 +110,3 @@ app.on('window-all-closed', async () => {
     console.log("KILLED");
   });
 });
-
-app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
-
-// App close handler
-app.on('before-quit', function() {
-});
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.

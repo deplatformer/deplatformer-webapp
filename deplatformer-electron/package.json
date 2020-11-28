@@ -10,7 +10,7 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\"",
-    "debug": "electron-forge start -- --debug"
+    "debug": "electron-forge start -- $NODE_DEBUG_OPTION"
   },
   "keywords": [],
   "author": {

@@ -1,6 +1,6 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const {spawn} = require('child_process');
+const {execFile} = require('child_process');
 
 let pids = []
 
@@ -14,12 +14,19 @@ const createWindow = async () => {
   // Create the browser window.
 
 
+  let mainWindow = new BrowserWindow({
+    width: 1920,
+    height: 1440,
+  });
+
   let dataToSend;
   // spawn new child process to call the python script
   let python
   try {
     if (process.platform === 'linux') {
-      python = await spawn('../../dist/deplatformer-linux/deplatformer'); //, ['script1.py']);
+      const pathToDeplatformerFlask = path.join(__dirname, '../static/deplatformer-linux/deplatformer');  //this works for dev & release
+      console.log(pathToDeplatformerFlask)
+      python = await execFile( pathToDeplatformerFlask );//'static/deplatformer-linux/deplatformer'); //, ['script1.py']);
       pids = pids.concat( [python] );
     } else {
       throw Error();
@@ -33,20 +40,25 @@ const createWindow = async () => {
 
   // collect data from script
   python.stdout.on('data', function (data) {
-    console.log('Pipe data from python script ...');
     dataToSend = data.toString();
-    // console.log(dataToSend);
-
-    const mainWindow = new BrowserWindow({
-      width: 1920,
-      height: 1440,
-    });
-    mainWindow.loadURL("http://localhost:5000/");
+    console.log("INFO %s", dataToSend);
 
     if (dataToSend.includes("Serving Flask app")){
       // and load the index.html of the app.;
+
+      mainWindow.loadURL("http://localhost:5000/");
+
     }
   });
+
+  // collect data from script
+  python.stderr.on('data', function (data) {
+    dataToSend = data.toString();
+    console.log("ERROR %s" , dataToSend);
+
+  });
+
+
   // in close event we are sure that stream from child process is closed
   python.on('close', (code) => {
     console.log(`child process close all stdio with code ${code}`);
@@ -60,7 +72,21 @@ const createWindow = async () => {
 
   // Open the DevTools.
 //  mainWindow.webContents.openDevTools();
+  // Emitted when the window is closed.
+
+  mainWindow.on('closed', function() {
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    mainWindow = null
+  })
 };
+
+function logErr(errText){
+
+  console.log('Pipe data from python script ...');
+  console.log(errText)
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -70,7 +96,7 @@ app.on('ready', createWindow);
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', async () => {
+app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -106,7 +132,7 @@ app.on('will-quit', function() {
     // });
     console.log("KILLING WITH SIGINT");
     console.log(proc.pid);
-    await proc.kill("SIGKILL")
+    await proc.kill("SIGINT")
     console.log("KILLED");
   });
 });

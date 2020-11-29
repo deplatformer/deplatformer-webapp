@@ -17,10 +17,12 @@ def create_app():
     """Factory function to create app instance"""
     env = os.getenv(
         "FLASK_ENV",
-        "local",
+        "production",
     )
     if env not in app_config:
         raise NameError(f"Config for environment '{env}' does not exist!")
+
+    print(env)
 
     config_class = app_config[env]
 
@@ -29,9 +31,9 @@ def create_app():
         static_folder = os.path.join(sys._MEIPASS, 'static')
         app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
     else:
-        #app = Flask(__name__)
         app = Flask(
             __name__,
+            # template_folder="templates",
             static_folder="static",
         )
     app.config.from_object(config_class)

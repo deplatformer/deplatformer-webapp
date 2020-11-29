@@ -3,6 +3,7 @@ from __future__ import with_statement
 import logging
 import re
 from logging.config import fileConfig
+import sys, os
 
 from alembic import context
 from flask import current_app
@@ -14,9 +15,27 @@ USE_TWOPHASE = False
 # access to the values within the .ini file in use.
 config = context.config
 
+print(current_app.config)  ##FIXME
+print(current_app.config["ENV"])  ##FIXME
+# print(current_app.app_context())
+
+print(config.config_file_name)
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-fileConfig(config.config_file_name)
+if getattr(sys, 'frozen', False):
+    with current_app.app_context():
+        alembic_logfile = os.path.join(sys._MEIPASS, 'migrations/alembic.ini')
+        # alembic_logfile = os.path.join('./migrations/alembic.ini')
+        print("Frozen")  ###FIXME
+        print(alembic_logfile)  #FIXME
+        fileConfig(alembic_logfile)
+else:
+    with current_app.app_context():
+        print("Not Frozen") #FIXME
+        print(config.config_file_name) #FIXME
+        fileConfig(config.config_file_name)
+
 logger = logging.getLogger("alembic.env")
 
 # add your model's MetaData object here

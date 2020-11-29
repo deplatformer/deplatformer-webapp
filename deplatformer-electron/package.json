@@ -22,6 +22,7 @@
     "forge": "./forge.config.js"
   },
   "dependencies": {
+    "del": "^6.0.0",
     "electron-squirrel-startup": "^1.0.0",
     "ncp": "^2.0.0"
   },

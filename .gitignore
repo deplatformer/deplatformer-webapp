@@ -85,3 +85,4 @@ _meta
 build/
 dist/
 versions_bkp
+deplatformer-electron/static

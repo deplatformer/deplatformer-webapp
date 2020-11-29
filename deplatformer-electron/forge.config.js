@@ -17,25 +17,31 @@ module.exports = {
             name: '@electron-forge/maker-deb',
             config: {},
         },
-        {
-            name: '@electron-forge/maker-rpm',
-            config: {},
-        },
     ],
     hooks: {
-        packageAfterExtract: async () => {
-            console.log('On hook packageAfterExtract');
-            var ncp = require('ncp').ncp;
-            ncp.limit = 16;
+        generateAssets:
+            async () => {
 
-            ncp("../dist", "./out/dist/", function (err) {
-                if (err) {
-                    return console.error(err);
-                }
-                console.log('done!');
-            });
-            console.log('Files copied!');
-        },
+                // generate assets by platform type
+                console.log(process.platform);
+
+                console.log('On hook packageAfterExtract');
+                var ncp = require('ncp').ncp;
+
+                const del = require('del');
+                ncp.limit = 16;
+
+                await del(['./static/deplatformer-linux']);
+
+                ncp("../dist/deplatformer-linux", "./static/deplatformer-linux/", function (err) {
+                    if (err) {
+                        return console.error(err);
+                    }
+                    console.log('done!');
+                });
+                console.log('Files copied!');
+            },
+        // packageAfterExtract:
     },
     // plugins: [
     //     [

@@ -101,10 +101,22 @@ class DevelopmentConfig(Config):
     )
 
 
+class ProductionConfig(Config):
+    ENV = os.getenv(
+        "FLASK_ENV",
+        "production",
+    )
+    DEBUG = os.getenv(
+        "FLASK_DEBUG",
+        True,
+    )
+
+
+
 app_config = {
     # "test": TestingConfig,
     "local": LocalConfig,
     "dev": DevelopmentConfig,
     # "staging": StagingConfig,
-    # "prod": ProductionConfig,
+    "production": ProductionConfig,
 }

@@ -5,9 +5,9 @@ module.exports = {
     makers: [
         {
             name: '@electron-forge/maker-squirrel',
-            config: {
-                name: 'electron_forge_webpack',
-            },
+            //config: {
+            //    name: 'electron_forge_webpack',
+            //},
         },
         {
             name: '@electron-forge/maker-zip',
@@ -20,6 +20,7 @@ module.exports = {
     ],
     hooks: {
         generateAssets:
+		//packageAfterExtract:
             async () => {
 
                 // generate assets by platform type
@@ -31,9 +32,9 @@ module.exports = {
                 const del = require('del');
                 ncp.limit = 16;
 
-                await del(['./static/deplatformer-linux']);
+                await del(['./static/deplatformer-windows']);
 
-                ncp("../dist/deplatformer-linux", "./static/deplatformer-linux/", function (err) {
+                ncp("../dist/deplatformer-windows", "./static/deplatformer-windows/", function (err) {
                     if (err) {
                         return console.error(err);
                     }

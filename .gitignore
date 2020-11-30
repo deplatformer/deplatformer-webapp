@@ -86,3 +86,4 @@ build/
 dist/
 versions_bkp
 deplatformer-electron/static
+deplatformer-electron/src/static/

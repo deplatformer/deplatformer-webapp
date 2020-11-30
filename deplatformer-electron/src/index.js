@@ -1,6 +1,6 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const {execFile} = require('child_process');
+const {spawn} = require('cross-spawn');
 
 let pids = []
 
@@ -28,7 +28,13 @@ const createWindow = async () => {
       console.log(pathToDeplatformerFlask)
       python = await execFile( pathToDeplatformerFlask );//'static/deplatformer-linux/deplatformer'); //, ['script1.py']);
       pids = pids.concat( [python] );
-    } else {
+    } else if (process.platform === 'win32') {
+	  const pathToDeplatformerFlask = path.join(__dirname, '..\\static\\deplatformer-windows\\deplatformer.exe');  //this works for dev & release
+	  //const pathToDeplatformerFlask = '.\\static\\deplatformer-windows\\deplatformer.exe';  //this works for dev & release
+      console.log(pathToDeplatformerFlask)
+      python = await spawn( pathToDeplatformerFlask );//'static/deplatformer-linux/deplatformer'); //, ['script1.py']);
+      pids = pids.concat( [python] );
+	} else {
       throw Error();
     }
   } catch (err) {

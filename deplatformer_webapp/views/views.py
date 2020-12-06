@@ -30,9 +30,14 @@ def userfile(
     platform,
     file_id,
 ):
+    if file_id is None or file_id == 'None':
+        return "File not found." #TODO: how to make 404?
+
     directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
     if directory is None:
         return "File not found."
+
+    #app.logger.debug("file_id: %s" % file_id)
 
     filepath = None
     if platform == "facebook":

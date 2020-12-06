@@ -95,7 +95,7 @@ def userfileview(
     # files = Files.query.filter_by(user_id=current_user.id).all()
 
     return render_template(
-        "media/image.html",
+        "media/media_view.html",
         file=file,
         fullpath=fullpath,
         filename=filename,

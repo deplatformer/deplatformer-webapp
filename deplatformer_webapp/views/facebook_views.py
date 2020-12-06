@@ -14,7 +14,7 @@ from deplatformer_webapp.crypto import derive_key_from_usercreds
 from ..app import app, db
 from ..helpers import unzip
 from ..helpers.facebook_helpers import clean_nametags, create_user_dirs, cut_hyperlinks, posts_to_db, save_upload_file
-from ..helpers.filecoin_helpers import push_dir_to_filecoin
+# from ..helpers.filecoin_helpers import push_dir_to_filecoin
 from ..models import facebook
 from ..models.user_models import UserDirectories
 
@@ -83,7 +83,8 @@ def facebook_upload():
             derived_user_key = derive_key_from_usercreds(
                 current_user.username.encode("utf-8"), current_user.password.encode("utf-8")
             )
-            push_dir_to_filecoin(unzip_dir, derived_user_key)
+            # TODO: push dir to filecoin
+            # push_dir_to_filecoin(unzip_dir, derived_user_key)
 
             # TODO: DELETE CACHED COPIES OF FILE UPLOADS
 
@@ -137,6 +138,8 @@ def facebook_view():
 
     # Sort albums so that Profile Pictures, Cover Photos, and Videos come first
     albums = facebook.Album.query.order_by(desc("last_modified")).all()
+    #this is where the albums are disambiguated, by album name
+    # todo: perform better unique disambiguation of albums, rather than just by name (currently can't support
     albums_dict = {album.name: album for album in albums}
     sorted_main_albums = [albums_dict[c] for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
     sorted_main_albums_names = [c for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
@@ -334,7 +337,7 @@ def facebook_album(
         )
 
     album = facebook.Album.query.filter_by(id=album_id)
-    files = facebook.Media.query.filter_by(album_id=album_id).all()
+    files = facebook.Media.query.filter((facebook.Media.album_id == album_id) & (facebook.Media.media_type.in_(["IMAGE", "VIDEO"]))).all()
     print(files)
 
     return render_template(

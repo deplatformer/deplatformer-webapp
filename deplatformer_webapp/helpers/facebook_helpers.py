@@ -8,6 +8,8 @@ import ftfy
 from flask import app
 from sqlalchemy import asc, desc
 from werkzeug.utils import secure_filename
+import ffmpeg
+from PIL import Image
 
 from deplatformer_webapp.models.facebook import Media
 
@@ -177,7 +179,27 @@ def posts_to_db(fb_dir):
 
                 profile_update = False
 
+                # TODO: use PIL exif
+
                 if timestamp is not None:
+
+                    # # create and use thumbnail
+                    #
+                    # thumbpath = create_thumbnail(fb_dir, filepath)
+                    #
+                    # thumbnail_media_type = "THUMBNAIL"
+                    #
+                    # thumbnail = facebook.Media(
+                    #     timestamp=timestamp,
+                    #     # title=title,
+                    #     # description=description,
+                    #     filepath=thumbpath,
+                    #     post_id=None,
+                    #     media_type=thumbnail_media_type,
+                    # )
+                    # appdb.session.add(thumbnail)
+                    # appdb.session.commit()
+
                     fb_post = facebook.Post(
                         timestamp=timestamp,
                         post=post,
@@ -188,6 +210,7 @@ def posts_to_db(fb_dir):
                         latitude=latitude,
                         longitude=longitude,
                         profile_update=profile_update,
+                        # thumbnail=thumbnail.id,
                     )
                     appdb.session.add(fb_post)
                     appdb.session.commit()
@@ -249,7 +272,7 @@ def posts_to_db(fb_dir):
             if media_obj == None:
                 # Update is not linked to a media file
                 continue
-            new_media = media_obj.post_id != None
+            new_media = media_obj.post_id is not None
 
             # Get profile update metadata
             unix_time = update.get("timestamp", None)
@@ -268,11 +291,30 @@ def posts_to_db(fb_dir):
                     # Update existing media record with post_id
                     media_obj.post_id = post_id
                 else:
+                    # TODO: Get exif
+                    # create thumbnail
+
+                    thumbpath = create_thumbnail(fb_dir, filepath)
+
+                    thumbnail_media_type = "THUMBNAIL"
+
+                    thumbnail = facebook.Media(
+                        timestamp=timestamp,
+                        title=title,
+                        # description=description,
+                        filepath=thumbpath,
+                        post_id=None,
+                        media_type=thumbnail_media_type,
+                    )
+                    appdb.session.add(thumbnail)
+                    appdb.session.commit()
+
                     new_media_obj = facebook.Media(
                         timestamp=media_obj.timestamp,
                         description=media_obj.description,
                         filepath=filepath,
                         post_id=post_id,
+                        thumbnail=thumbnail.id
                     )
                     appdb.session.add(new_media_obj)
                 appdb.session.commit()
@@ -345,6 +387,26 @@ def albums_to_db(fb_dir):
                 latitude = photo.get("media_metadata", {}).get("photo_metadata", {}).get("latitude", None)
                 longitude = photo.get("media_metadata", {}).get("photo_metadata", {}).get("longitude", None)
                 orientation = photo.get("media_metadata", {}).get("photo_metadata", {}).get("orientation", None)
+                media_type = "IMAGE"
+
+                # TODO: Get exif
+                # create thumbnail
+
+                thumbpath = create_thumbnail(fb_dir, filepath)
+
+                thumbnail_media_type = "THUMBNAIL"
+
+                thumbnail = facebook.Media(
+                    timestamp=timestamp,
+                    title=title,
+                    description=description,
+                    filepath=thumbpath,
+                    post_id=None,
+                    album_id=album.id,
+                    media_type=thumbnail_media_type,
+                )
+                appdb.session.add(thumbnail)
+                appdb.session.commit()
 
                 media = facebook.Media(
                     timestamp=timestamp,
@@ -356,6 +418,8 @@ def albums_to_db(fb_dir):
                     filepath=filepath,
                     post_id=None,
                     album_id=album.id,
+                    media_type=media_type,
+                    thumbnail=thumbnail.id,
                 )
                 appdb.session.add(media)
                 appdb.session.commit()
@@ -370,7 +434,7 @@ def albums_to_db(fb_dir):
             # Get cover photo id for this album
             cover_photo = facebook.Media.query.filter_by(filepath=album_contents["cover_photo"]["uri"]).first()
             album.total_files = total_files
-            album.cover_photo_id = cover_photo.id
+            album.cover_photo_id = cover_photo.thumbnail  #cover_photo.id
 
             appdb.session.commit()
 
@@ -396,7 +460,7 @@ def albums_to_db(fb_dir):
 
         # Update album record with number of photos and cover photo
         album.total_files = total_files
-        album.cover_photo = cover_photo.id
+        album.cover_photo = cover_photo.thumbnail  #cover_photo.id
         appdb.session.commit()
 
     # Include the video directory
@@ -416,12 +480,54 @@ def albums_to_db(fb_dir):
                 unix_time = video.get("creation_timestamp", None)
                 timestamp = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S") if unix_time else None
                 description = video.get("description", None)
+                title = "Video"
+                media_type = "VIDEO"
+                thumbnail_media_type = "THUMBNAIL"
+
+                print("Video:  Filepath: %s, %s" % (fb_dir, filepath))
+                osfilepath = os.path.join(fb_dir, filepath)
+
+                split = os.path.splitext(filepath)
+                thumbpath = "".join([split[0], split[1], '.thumb', '.jpg'])
+
+                osfileoutpath = os.path.join(fb_dir, thumbpath)
+                print("Video:  Thumbpath: %s" % thumbpath)
+
+                # https://mhsiddiqui.github.io/2018/02/09/Using-FFmpeg-to-create-video-thumbnails-in-Python/
+                # https://github.com/kkroening/ffmpeg-python/blob/master/examples/README.md#generate-thumbnail-for-video
+                # https://trac.ffmpeg.org/wiki/Create%20a%20thumbnail%20image%20every%20X%20seconds%20of%20the%20video
+
+                ff = (
+                    ffmpeg
+                        .input(osfilepath)
+                        .filter('scale', "640", -1)
+                        .output(osfileoutpath, vframes=1)
+                )
+
+                print(ff)
+
+                ff.run()
+
+                thumbnail = facebook.Media(
+                    timestamp=timestamp,
+                    title=title,
+                    description=description,
+                    filepath=thumbpath,
+                    post_id=None,
+                    album_id=album.id,
+                    media_type=thumbnail_media_type,
+                )
+                appdb.session.add(thumbnail)
+                appdb.session.commit()
 
                 media = facebook.Media(
                     timestamp=timestamp,
+                    title=title,
                     description=description,
                     filepath=filepath,
                     album_id=album.id,
+                    media_type=media_type,
+                    thumbnail=thumbnail.id,
                 )
                 appdb.session.add(media)
                 appdb.session.commit()
@@ -429,12 +535,13 @@ def albums_to_db(fb_dir):
         # Count total number of videos in this album
         total_files = len(facebook.Media.query.filter_by(album_id=album.id).all())
 
-        # Use the first video as a cover for the album
-        cover_video = facebook.Media.query.filter_by(album_id=album.id).first()
+        # Use the first video's thumbnail as a cover for the album
+        cover_video = facebook.Media.query.filter((facebook.Media.album_id == album.id) & (facebook.Media.media_type == "VIDEO")).first()
+        cover_video_thumbnail = cover_video.thumbnail
 
         # Update album record with number of videos and cover video
         album.total_files = total_files
-        album.cover_photo = cover_video
+        album.cover_photo_id = cover_video_thumbnail
         appdb.session.commit()
 
 
@@ -474,3 +581,27 @@ def save_upload_file(upload_file, directory):
         )
     )
     return file_name
+
+
+def create_thumbnail(fb_dir, filepath):
+    print("Image:  Filepath: %s, %s" % (fb_dir, filepath))
+    osfilepath = os.path.join(fb_dir, filepath)
+
+    split = os.path.splitext(filepath)
+    thumbpath = "".join([split[0], split[1], '.thumb', '.jpg'])
+
+    osfileoutpath = os.path.join(fb_dir, thumbpath)
+    print("Image:  Thumbpath: %s" % thumbpath)
+
+    # open file
+    image = Image.open(osfilepath)
+    # make a copy
+    im = image.copy()
+    # check mode, if not then convert it
+    if not im.mode == 'RGB':
+        im = im.convert('RGB')
+    # now thumbnail it
+    im.thumbnail((640, 480), resample=Image.HAMMING)
+    im.save(osfileoutpath, "JPEG", quality=30)
+
+    return thumbpath

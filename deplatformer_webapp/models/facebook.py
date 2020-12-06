@@ -48,6 +48,8 @@ class Media(db.Model):
     filepath = db.Column(db.String(), index=True)
     post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
     album_id = db.Column(db.Integer, db.ForeignKey("albums.id"))
+    media_type = db.Column(db.String())
+    thumbnail = db.Column(db.Integer)
 
 
 class Album(db.Model):

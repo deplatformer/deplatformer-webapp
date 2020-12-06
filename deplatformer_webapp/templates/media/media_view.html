@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div class="small_note"><a href="{{ url_for('facebook_album', album_id=file.album_id) }}">back</a></div>
+
+<div class="media-container">
+      <a target="_blank" href="/userfile/facebook/{{ file.id }}" >
+          {% if file.media_type == "VIDEO" %}
+        <div class="media-view embed-responsive embed-responsive-4by3">
+          <video controls><source src="/userfile/facebook/{{ file.id }}" /></video>
+        </div>
+      {% else %}
+        <img class="media-view" src="/userfile/facebook/{{ file.id }}" title="posted {{ file.timestamp }}">
+      {% endif %}
+      {% if file.description %}
+        <div class="card-body">
+            <p class="card-text"><div class="small_note">{{ file.description }}</div></p>
+        </div>
+      {% endif %}
+    </a>
+
+</div>
+
+{% endblock %}
+
+

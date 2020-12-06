@@ -23,15 +23,9 @@
 
   <div class="col">
     <div class="card" style="margin-top: 30px; text-align:center; border: 0;">
-      {% if album.name == "Videos" %}
-        <div class="embed-responsive embed-responsive-4by3">
-          <video controls><source src="/userfile/facebook/{{ file.id }}" /></video>
-        </div>
-      {% else %}
         <a href="/userfile/facebook/view/{{ file.id }}">
-        <img class="card-img-top img-fluid" src="/userfile/facebook/{{ file.id }}" title="posted {{ file.timestamp }}">
+        <img class="card-img-top img-fluid" src="/userfile/facebook/{{ file.thumbnail }}" title="posted {{ file.timestamp }}">
         </a>
-      {% endif %}
       {% if file.description %}
         <div class="card-body">
         <p class="card-text"><div class="small_note">{{ file.description }}</div></p>

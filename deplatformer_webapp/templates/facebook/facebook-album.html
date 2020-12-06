@@ -28,7 +28,7 @@
           <video controls><source src="/userfile/facebook/{{ file.id }}" /></video>
         </div>
       {% else %}
-        <a href="/userfile/facebook/{{ file.id }}">
+        <a href="/userfile/facebook/view/{{ file.id }}">
         <img class="card-img-top img-fluid" src="/userfile/facebook/{{ file.id }}" title="posted {{ file.timestamp }}">
         </a>
       {% endif %}

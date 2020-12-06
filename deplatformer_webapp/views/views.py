@@ -53,6 +53,56 @@ def userfile(
     return send_from_directory(fullpath, filename)
 
 
+
+@app.route(
+    "/userfile/<platform>/view/<file_id>",
+    methods=["GET"],
+)
+@login_required
+def userfileview(
+    platform,
+    file_id,
+):
+    if file_id is None or file_id == 'None':
+        return "File not found."
+    # TODO: how to make 404 (instead of 200)?
+
+    directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
+    if directory is None:
+        return "File not found."
+
+    # app.logger.debug("file_id: %s" % file_id)
+
+    file = facebook.Media.query.filter_by(id=file_id).first()
+
+    if file is None:
+        return "File not found in DB."
+
+    filepath = None
+    if platform == "facebook":
+        filepath = file.filepath
+
+    # TODO: Determine file type from DB
+
+    if filepath is None:
+        return "File not found."
+
+    split = os.path.split(filepath)
+    filename = split[1]
+    fullpath = os.path.join(app.config["USER_DATA_DIR"], directory.directory, split[0])
+
+    # return send_from_directory(fullpath, filename)
+    # files = Files.query.filter_by(user_id=current_user.id).all()
+
+    return render_template(
+        "media/image.html",
+        file=file,
+        fullpath=fullpath,
+        filename=filename,
+        breadcrumb="Filecoin / Files",
+    )
+
+
 @app.route("/instagram")
 @login_required
 def instagram():

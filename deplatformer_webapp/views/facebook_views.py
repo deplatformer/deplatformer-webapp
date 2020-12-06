@@ -138,14 +138,17 @@ def facebook_view():
     # Sort albums so that Profile Pictures, Cover Photos, and Videos come first
     albums = facebook.Album.query.order_by(desc("last_modified")).all()
     albums_dict = {album.name: album for album in albums}
-    sorted_albums = [albums_dict[c] for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
-    print(sorted_albums)
+    sorted_main_albums = [albums_dict[c] for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
+    sorted_main_albums_names = [c for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
+    sorted_other_albums = [albums_dict[d] for d in albums_dict if d not in sorted_main_albums_names]
+    app.logger.debug(sorted_main_albums)
     return render_template(
         "facebook/facebook-view.html",
         breadcrumb="Facebook / View content",
         this_day=day,
         this_month=month_script,
-        albums=sorted_albums,
+        main_albums=sorted_main_albums,
+        other_albums=sorted_other_albums,
     )
 
 

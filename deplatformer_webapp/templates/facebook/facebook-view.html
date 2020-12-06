@@ -17,7 +17,7 @@
 
 <div id="albums">
 
-{% for album in albums %}
+{% for album in main_albums %}
 
   {% if (loop.index == 1) %}
     <div class="row">
@@ -48,6 +48,47 @@
     <div class="row">
   {% endif %}
   
+{% endfor %}
+
+<!-- might have an open row div remaining -->
+
+</div> <!-- albums -->
+</div>
+
+
+<div id="albums">
+
+{% for album in other_albums %}
+
+  {% if (loop.index == 1) %}
+    <div class="row">
+  {% endif %}
+
+  <div class="col">
+
+    <a href="/facebook-album/{{ album.id }}">
+    <div class="card" style="margin-top: 30px; text-align:center">
+      {% if album.name == "Videos" %}
+       <div class="embed-responsive embed-responsive-4by3">
+         <video controls><source src="/userfile/facebook/{{ album.cover_photo_id }}" /></video>
+        </div>
+      {% else %}
+        <img class="card-img-top img-fluid" src="/userfile/facebook/{{ album.cover_photo_id }}" alt="Card image cap">
+      {% endif %}
+      <div class="card-body">
+          <p class="card-text">{{ album.name }}</p> </a>
+          <p class="card-text small_note">  {{ album.total_files}} files</p>
+      </div>
+    </div>
+
+
+ </div> <!-- column -->
+
+  {% if loop.index % 3 == 0 %}
+    </div> <!-- row -->
+    <div class="row">
+  {% endif %}
+
 {% endfor %}
 
 <!-- might have an open row div remaining -->

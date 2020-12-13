@@ -13,9 +13,10 @@ from deplatformer_webapp.crypto import derive_key_from_usercreds
 
 from ..app import app, db
 from ..helpers import unzip
-from ..helpers.facebook_helpers import clean_nametags, create_user_dirs, cut_hyperlinks, posts_to_db, save_upload_file
+from ..helpers.facebook_helpers import clean_nametags, cut_hyperlinks, posts_to_db
+from ..helpers.media_helpers import create_user_dirs, save_upload_file
 # from ..helpers.filecoin_helpers import push_dir_to_filecoin
-from ..models import facebook
+from ..models import media
 from ..models.user_models import UserDirectories
 
 
@@ -44,7 +45,7 @@ def facebook_upload():
     # Uploading a new file
     if request.method == "POST":
         try:
-            facebook_dir = create_user_dirs(current_user, app.config["USER_DATA_DIR"])
+            facebook_dir = create_user_dirs(current_user, app.config["USER_DATA_DIR"], "facebook")
 
             # TODO: This whole procedure should be async
             # Save the uploaded file
@@ -137,7 +138,7 @@ def facebook_view():
         )
 
     # Sort albums so that Profile Pictures, Cover Photos, and Videos come first
-    albums = facebook.Album.query.order_by(desc("last_modified")).all()
+    albums = media.Album.query.order_by(desc("last_modified")).all()
     #this is where the albums are disambiguated, by album name
     # todo: perform better unique disambiguation of albums, rather than just by name (currently can't support
     albums_dict = {album.name: album for album in albums}
@@ -336,8 +337,8 @@ def facebook_album(
             breadcrumb="Facebook / View content ",
         )
 
-    album = facebook.Album.query.filter_by(id=album_id)
-    files = facebook.Media.query.filter((facebook.Media.album_id == album_id) & (facebook.Media.media_type.in_(["IMAGE", "VIDEO"]))).all()
+    album = media.Album.query.filter_by(id=album_id)
+    files = media.Media.query.filter((media.Media.album_id == album_id) & (media.Media.media_type.in_(["IMAGE", "VIDEO"]))).all()
     print(files)
 
     return render_template(

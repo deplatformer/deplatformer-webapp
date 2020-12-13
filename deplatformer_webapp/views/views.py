@@ -6,7 +6,7 @@ from flask_user import current_user, login_required
 
 from ..app import app, db
 from ..crypto import create_user_key_if_not_exists
-from ..models import facebook
+from ..models import media
 from ..models.user_models import UserDirectories
 
 
@@ -19,7 +19,6 @@ def homepage():
         "homepage.html",
         breadcrumb="Home",
     )
-
 
 @app.route(
     "/userfile/<platform>/<file_id>",
@@ -41,7 +40,7 @@ def userfile(
 
     filepath = None
     if platform == "facebook":
-        filepath = facebook.Media.query.filter_by(id=file_id).first().filepath
+        filepath = media.Media.query.filter_by(id=file_id).first().filepath
 
     if filepath is None:
         return "File not found."
@@ -73,7 +72,7 @@ def userfileview(
 
     # app.logger.debug("file_id: %s" % file_id)
 
-    file = facebook.Media.query.filter_by(id=file_id).first()
+    file = media.Media.query.filter_by(id=file_id).first()
 
     if file is None:
         return "File not found in DB."

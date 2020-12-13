@@ -3,12 +3,24 @@ import os
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from flask_user import UserManager
+from flask_user import UserManager, login_required
 
 from .config import app_config
 
 db = SQLAlchemy()
 migrate = Migrate()
+
+
+from .lib.tusfilter import TusFilter
+
+from .helpers.media_helpers import handle_uploaded_file
+
+
+
+def upload_resumable_callback(tmpfile, app):
+    # do something else
+    handle_uploaded_file(tmpfile, app)
+    return 'End of upload'
 
 
 def create_app():
@@ -36,13 +48,21 @@ def create_app():
         db,
     )
 
+    app.wsgi_app = TusFilter(
+        app.wsgi_app,
+        upload_path='/upload_resumable',
+        tmp_dir='tmp', # todo: config this
+        callback=upload_resumable_callback,
+        flaskapp=app,
+    )
+
     return app
 
 
 app = create_app()
 
-from .models import facebook, filecoin_models, user_models
-from .views import facebook_views, filecoin_views, views
+from .models import media, filecoin_models, user_models
+from .views import facebook_views, filecoin_views, views, upload_views
 
 # Setup Flask-User and specify the User data-model
 user_manager = UserManager(
@@ -50,3 +70,4 @@ user_manager = UserManager(
     db,
     user_models.User,
 )
+

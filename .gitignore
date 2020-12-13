@@ -82,3 +82,10 @@ _meta
 !**/*/env.py
 
 versions_bkp
+
+tmp/
+deplatformer-electron/src/static/
+deplatformer-electron/static/
+deplatformer-electron/node_modules/
+deplatformer-electron/out/
+

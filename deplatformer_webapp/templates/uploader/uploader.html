@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+
+
+{% block extra_css %}
+<link href="https://releases.transloadit.com/uppy/v1.23.3/uppy.min.css" rel="stylesheet">
+{% endblock %}
+
+
+
+{% block extra_js %}
+<script src="https://releases.transloadit.com/uppy/v1.23.3/uppy.min.js"></script>
+<script>
+
+  var uppy = Uppy.Core()
+  uppy.use(Uppy.Dashboard, {
+  trigger: '.UppyModalOpenerBtn',
+  inline: true,
+  target: '.DashboardContainer',
+  replaceTargetContent: true,
+  showProgressDetails: true,
+  note: 'Images, Videos and Folders containing them',
+  height: 470,
+  metaFields: [
+    { id: 'name', name: 'Name', placeholder: 'file name' },
+    { id: 'description', name: 'Description', placeholder: 'describe what the image is about' },
+    { id: 'tags', name: 'Tags', placeholder: 'tags, separated, by, commas' },
+  ],
+  browserBackButtonClose: false
+})
+
+    uppy.setMeta({ platform: 'media' })  //https://uppy.io/docs/uppy/#meta
+
+<!--    Use the metadata to store the User ID  (maybe use a custom cookie or JWT) -->
+
+    uppy.setMeta({ user: '{{ user.id }}' })  //https://uppy.io/docs/uppy/#meta
+
+    uppy.use(Uppy.Tus, {endpoint: 'http://127.0.0.1:5000/upload_resumable', withCredentials: true})
+<!--    uppy.use(Uppy.XHRUpload, {endpoint: 'http://127.0.0.1:5000/upload_resumable', formData: true, metaFields: null, method: 'post'})-->
+
+
+</script>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+    <div id="drag-drop-area"></div>
+    <div class="DashboardContainer" width="500px" height="500px"></div>
+
+{% endblock %}
+
+

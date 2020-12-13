@@ -4,13 +4,13 @@ tags = db.Table(
     "tag_links",
     db.Column("tag_id", db.Integer, db.ForeignKey("tags.id"), primary_key=True),
     db.Column("post_id", db.Integer, db.ForeignKey("posts.id"), primary_key=True),
-    info={"bind_key": "facebook"},
+    info={"bind_key": "media"},
 )
 
 
 class FileKey(db.Model):
     __tablename__ = "file_keys"
-    __bind_key__ = "facebook"
+    __bind_key__ = "media"
 
     enc_key = db.Column(db.String(), primary_key=True, nullable=False)
     iv = db.Column(db.String(16), nullable=False)
@@ -18,7 +18,7 @@ class FileKey(db.Model):
 
 class Post(db.Model):
     __tablename__ = "posts"
-    __bind_key__ = "facebook"
+    __bind_key__ = "media"
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     timestamp = db.Column(db.String())
@@ -36,7 +36,7 @@ class Post(db.Model):
 
 class Media(db.Model):
     __tablename__ = "media"
-    __bind_key__ = "facebook"
+    __bind_key__ = "media"
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     timestamp = db.Column(db.String())
@@ -54,7 +54,7 @@ class Media(db.Model):
 
 class Album(db.Model):
     __tablename__ = "albums"
-    __bind_key__ = "facebook"
+    __bind_key__ = "media"
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     last_modified = db.Column(db.String())
@@ -66,7 +66,7 @@ class Album(db.Model):
 
 class Tag(db.Model):
     __tablename__ = "tags"
-    __bind_key__ = "facebook"
+    __bind_key__ = "media"
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     tag = db.Column(db.String())

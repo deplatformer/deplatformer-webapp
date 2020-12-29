@@ -7,9 +7,6 @@ from sqlalchemy import MetaData
 
 from .config import app_config
 
-from .lib.tusfilter import TusFilter
-from .helpers.media_helpers import handle_uploaded_file
-
 naming_convention = {
     "ix": 'ix_%(column_0_label)s',
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -18,8 +15,8 @@ naming_convention = {
     "pk": "pk_%(table_name)s"
 }
 
-db = SQLAlchemy(metadata=MetaData(naming_convention=naming_convention))
-migrate = Migrate()
+from .lib.tusfilter import TusFilter
+from .helpers.media_helpers import handle_uploaded_file
 
 
 def upload_resumable_callback(app, tmpfileid, user):
@@ -45,6 +42,9 @@ def upload_resumable_callback(app, tmpfileid, user):
     handle_uploaded_file(app, tmpfileid, user)
     return 'End of upload'
 
+
+db = SQLAlchemy(metadata=MetaData(naming_convention=naming_convention))
+migrate = Migrate()
 
 def create_app():
     """Factory function to create app instance"""

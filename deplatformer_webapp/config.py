@@ -45,13 +45,15 @@ class Config:
     # Flask-SQLAlchemy settings
     # File-based SQL database
     CORE_SQLITE_DB = os.path.join(DATA_DIR, "deplatformer.sqlite")
-    FACEBOOK_SQLITE_DB = os.path.join(DATA_DIR, "facebook.sqlite")
+    MEDIA_SQLITE_DB = os.path.join(DATA_DIR, "media.sqlite")
     PLATFORM_DBS = {
-        "facebook": FACEBOOK_SQLITE_DB,
+        "media": MEDIA_SQLITE_DB,
     }
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # Avoids SQLAlchemy warning
     SQLALCHEMY_DATABASE_URI = f"sqlite:////{CORE_SQLITE_DB}"
-    SQLALCHEMY_BINDS = {"facebook": f"sqlite:////{FACEBOOK_SQLITE_DB}"}
+    SQLALCHEMY_BINDS = {
+        "media": f"sqlite:////{MEDIA_SQLITE_DB}"
+    }
 
     IPFS_STAGING_DIR = os.path.join(DATA_DIR, ".ipfs-staging")
     IPFS_DATA_DIR = os.path.join(DATA_DIR, ".ipfs-data")

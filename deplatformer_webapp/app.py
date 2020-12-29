@@ -10,16 +10,31 @@ from .config import app_config
 db = SQLAlchemy()
 migrate = Migrate()
 
-
 from .lib.tusfilter import TusFilter
-
 from .helpers.media_helpers import handle_uploaded_file
 
 
-
-def upload_resumable_callback(tmpfile, app):
+def upload_resumable_callback(app, tmpfileid, user):
     # do something else
-    handle_uploaded_file(tmpfile, app)
+    # set current app
+    # set current config
+
+    # app.app_context().push()
+    # with app.app_context():
+    # db.init_app(flaskapp)
+    #
+    # env = os.getenv(
+    #     "FLASK_ENV",
+    #     "local",
+    # )
+    # if env not in app_config:
+    #     raise NameError(f"Config for environment '{env}' does not exist!")
+    #
+    # config_class = app_config[env]
+    # app.config.from_object(config_class)
+    #
+    # db.init_app(app)
+    handle_uploaded_file(app, tmpfileid, user)
     return 'End of upload'
 
 

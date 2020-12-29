@@ -17,96 +17,84 @@ from ..app import db as appdb
 from ..models import media
 
 
-def save_file(media_file, media_info, media_dir):
-    print("Parsing Facebook content.")
-
+def save_file(app, media_file, media_info, media_dir, data_dir):
+    # appdb = app.db
     # FB might include more than one posts JSON file
     # files = os.listdir(fb_dir + "/posts/")
 
-    #todo: check create dir
-        #todo: then create dir
-        #todo: store create dir flag
+    #todo: check album
+        #todo: then create album
+        #todo: store created album flag
 
 # save the file
-    save_upload_file(media_file, media_dir, media_info.get("name", ""))
+    filepath = save_upload_file(media_file, media_dir, media_info.get("name", ""), media_info, data_dir)
 
-#     # media_obj = media.Media.query.filter_by(filepath=filepath).first()
-#     # if media_obj == None:
-#     #     # Update is not linked to a media file
-#     #     continue
-#     new_media = media_obj.post_id is not None
-#
-#     # Get profile update metadata
-#     unix_time = update.get("timestamp", None)
-#     timestamp = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S") if unix_time else None
-#     title = update.get("title", None)
-#
-#     # Save profile update as post
-#     # new_post = media.Post(timestamp=timestamp, post=title, media_files=1, profile_update=True)
-#     # appdb.session.add(new_post)
-#     # appdb.session.commit()
-#
-#     post_id = new_post.id
-#
-#     # TODO: Get exif
-#     # create thumbnail
-#
-#     thumbpath = create_thumbnail(fb_dir, filepath)
-#
-#     thumbnail_media_type = "THUMBNAIL"
-#
-#     thumbnail = media.Media(
-#         timestamp=timestamp,
-#         title=title,
-#         # description=description,
-#         filepath=thumbpath,
-#         post_id=None,
-#         media_type=thumbnail_media_type,
-#     )
-#     appdb.session.add(thumbnail)
-#     appdb.session.commit()
-#
-#     new_media_obj = media.Media(
-#         timestamp=media_obj.timestamp,
-#         description=media_obj.description,
-#         filepath=filepath,
-#         post_id=post_id,
-#         thumbnail=thumbnail.id,
-#         timestamp=timestamp,
-#         post=post,
-#         url=url,
-#         url_label=url_label,
-#         place_name=place_name,
-#         address=address,
-#         latitude=latitude,
-#         longitude=longitude,
-#         profile_update=profile_update,
-#     )
-#     appdb.session.add(new_media_obj)
-#     appdb.session.commit()
-#     # except Exception as e:
-#     #     print("couldn't update media file with post id")
-#     #     print(e)
-# # except:
-# #     # Profile update does not have a media file attached, so don't include it
-# #     # continue
-#
-#     # Recount total number of posts
-#     total_posts = len(media.Post.query.all())
-#
-#     # Calculate total number of profile updates
-#     profile_updates = total_posts - subtotal_posts
-#
-#     # Get latest post date
-#     max_date = media.Post.query.order_by(desc("timestamp")).first().timestamp
-#
-#     # Get first post date
-#     min_date = media.Post.query.order_by(asc("timestamp")).first().timestamp
-#
-#     # Count total number of media files
-#     total_media = len(media.Media.query.all())
-#
-#     #todo: use createdir flag and update the album with this photo
+    # TODO: Get exif
+    # create thumbnail
+
+    thumbpath = create_thumbnail(data_dir, filepath)
+
+    thumbnail_media_type = "THUMBNAIL"
+
+    thumbnail = media.Media(
+        filepath=thumbpath,
+        media_type=thumbnail_media_type,
+    )
+    appdb.session.add(thumbnail)
+    appdb.session.commit()
+
+    # "relativePath": metadata.get("relativePath", ""),
+    # "name": metadata.get("name", ""),
+    # "type": metadata.get("type", "text/none"),
+    # "tags": metadata.get("tags", ""),
+    # "description": metadata.get("description", ""),
+    # "platform": metadata.get("platform"),
+
+    # todo: add tags
+    # todo: add albums
+
+    new_media_obj = media.Media(
+        # timestamp=media_obj.get("timestamp"),
+        description=media_info.get("description", None),
+        filepath=filepath,
+        # post_id=post_id,
+        thumbnail=thumbnail.id,
+        title=media_info.get("name", None)
+        # timestamp=timestamp,
+        # post=post,
+        # url=url,
+        # url_label=url_label,
+        # place_name=place_name,
+        # address=address,
+        # latitude=latitude,
+        # longitude=longitude,
+        # profile_update=profile_update,
+    )
+    appdb.session.add(new_media_obj)
+    appdb.session.commit()
+    # except Exception as e:
+    #     print("couldn't update media file with post id")
+    #     print(e)
+# except:
+#     # Profile update does not have a media file attached, so don't include it
+#     # continue
+
+    # Recount total number of posts
+    # total_posts = len(media.Post.query.all())
+    #
+    # # Calculate total number of profile updates
+    # profile_updates = total_posts - subtotal_posts
+    #
+    # # Get latest post date
+    # max_date = media.Post.query.order_by(desc("timestamp")).first().timestamp
+    #
+    # # Get first post date
+    # min_date = media.Post.query.order_by(asc("timestamp")).first().timestamp
+    #
+    # # Count total number of media files
+    # total_media = len(media.Media.query.all())
+
+    #todo: use created album flag and update the album with this photo
 
     return (
         # total_posts,
@@ -305,30 +293,33 @@ def create_user_dirs(user, base_path, media_source):
         os.makedirs(user_dir)
 
     # Create a Facebook subdirectory.
-    facebook_dir = os.path.join(
+    media_dir = os.path.join(
         user_dir,
         media_source,
     )
-    if os.path.exists(facebook_dir):
+    if os.path.exists(media_dir):
         # Remove an existing directory to avoid dbase entry duplication
-        shutil.rmtree(facebook_dir)
-    os.makedirs(facebook_dir)
-    return facebook_dir
+        # shutil.rmtree(media_dir) # todo: HIGH PRIORITY fix this for duplicate facebook zips
+        print("Path exists")
+    else:
+        os.makedirs(media_dir)
+    return media_dir
 
 
-def save_upload_file(upload_file, directory, name=""):
+def save_upload_file(upload_file, directory, name="", media_info=None, data_dir=""):
     # todo:  Name security Please HIGH PRIORITY
     if name == "":
         file_name = secure_filename(upload_file.filename)
     else:
         file_name = name  # todo: sanitize name
-    print("Saving uploaded file")  # TODO: move to async user output
-    upload_file.save(
-        os.path.join(
-            directory,
-            file_name,
-        )
-    )
+    print("Saving uploaded file")  # TODO: move to async user output / call return?
+    destination = os.path.join(data_dir, file_name,)
+    if upload_file is not None:
+        upload_file.save(destination)
+    elif media_info is not None:
+        shutil.move(media_info.get("file_location"), destination, copy_function=shutil.copy)  # use copy instead of copy2 to ensure it copies (we don't need the metadata for an uploaded file)
+    else:
+        raise FileNotFoundError()  # todo: should this be a file not found error?
     return file_name
 
 
@@ -344,6 +335,11 @@ def create_thumbnail(fb_dir, filepath):
 
     # open file
     image = Image.open(osfilepath)
+    # Image.open('image.gif').convert('RGB').save('image.jpg')
+    #
+    # #check if gif
+    # image = check_gif(image)
+
     # make a copy
     im = image.copy()
     # check mode, if not then convert it
@@ -356,25 +352,48 @@ def create_thumbnail(fb_dir, filepath):
     return thumbpath
 
 
-def handle_uploaded_file(uid, app):
+def check_gif(image):
+    try:
+        image.seek(1)
+        frame = 1
+        multiframe = True
+    except EOFError:
+        print('Warning: it is a single frame GIF.')
+        frame = 0
+        multiframe = False
 
-    with open(os.path.join("tmp/" + uid + ".info")) as f:  # todo: config this
-        file = json.load(f)
+    # if multiframe
+    current_index = image.tell()
+    return image.seek(current_index)
 
-    app.app_context().push()
-    current_user = app.user_manager.db_manager.get_user_by_id(int(file["upload_metadata"]["user"]))
-#     media_dir = create_user_dirs(current_user, app.config["USER_DATA_DIR"], platform)
+
+def handle_uploaded_file(app, tmpfileid, user):
+
+    metadata_file_location = os.path.join("tmp/" + tmpfileid + ".info")
+    file_location = os.path.join("tmp/" + tmpfileid)
+    with open(metadata_file_location) as f:  # todo: config this
+        info_file = json.load(f)
+        metadata = info_file.get("upload_metadata", None)
+
+    # todo: except empty metadata
+
+    # flaskapp.app_context().push()
 #
 #     # TODO: This whole procedure should be async
 #     # Save the uploaded file
-#     media_file = request.files['files[]']
-#     media_info = {
-#         "relativePath": request.form.get("relativePath", ""),
-#         "name": request.form.get("name", ""),
-#         "type": request.form.get("type", "text/none"),
-#         "tags": request.form.get("tags", ""),
-#         "description": request.form.get("description", ""),
-#     }
+    media_info = {  # todo: sanitise input?
+        "relativePath": metadata.get("relativePath", ""),
+        "name": metadata.get("name", ""),
+        "type": metadata.get("type", "text/none"),
+        "tags": metadata.get("tags", ""),
+        "description": metadata.get("description", ""),
+        "platform": metadata.get("platform"),
+        "file_id": tmpfileid,
+        "file_location": file_location,
+        "metadata_file_location": metadata_file_location
+    }
+
+    media_dir = create_user_dirs(user, app.config["USER_DATA_DIR"], media_info.get("platform", "media"))
 #     # file_name = save_upload_file(request.files['files[]'], media_dir)
 #     # archive_filepath = os.path.join(media_dir, uploaded_file)
 #     # TODO: detect filetype archive
@@ -399,7 +418,14 @@ def handle_uploaded_file(uid, app):
 #     #     profile_updates,
 #     #     total_media,
 #     # ) = posts_to_db(unzip_dir)
-#     save_file(media_file, media_info, platform)
+#     file = None
+#     with open(os.path.join("tmp/" + tmpfileid), mode='r+b') as f:  # todo: config this
+#         file = f
+#     if file is not None:
+    save_file(app, None, media_info, media_info.get("platform", "media"), media_dir)
+    #     upload_success = True
+    # else:
+    #     upload_success = False
 #
 #     upload_success = True
 #

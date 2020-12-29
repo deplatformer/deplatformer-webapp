@@ -168,6 +168,12 @@ class UserNotAuthorized(Error):
     reason = 'User Not Authorized'
 
 
+class UserNotAuthenticated(Error):
+    status_code = http.FORBIDDEN
+    reason = 'User Not Authenticated'
+
+
+
 def b64_encode(s, encoding='utf-8'):
     return standard_b64encode(s.encode(encoding)).decode(encoding)
 
@@ -227,19 +233,23 @@ class TusFilter(object):
             self.finish_error(env, e)
 
         if env.temp['upload_finished'] and (self.callback is not None):
-            self.callback(env.temp['uid'], self.flaskapp)
+            self.callback(self.flaskapp, env.temp['uid'], self.user)
 
         return resp(environ, start_response)
 
     def handle(self, env):
 
-        # todo: check user id and token here
+        # check user id and token from session cookie here
             # if invalid token, throw error
 
+        # https://flask-user.readthedocs.io/en/latest/configuring_settings.html
         token_is_valid = False
+        user = None
         self.flaskapp.app_context().push()
+        if env.req.cookies.get("session", None) is None:
+            raise UserNotAuthenticated()
         cookie = json.loads(zlib.decompress(urlsafe_b64decode(
-            env.req.cookies['session'].split('.')[1] + "==============================")).decode("UTF-8"))
+            env.req.cookies['session'].split('.')[1] + "==============================")).decode("UTF-8"))  # todo: check for existance of env.req.cookies and if not, throw UserNotAuthenticated()
         data_items = self.flaskapp.user_manager.token_manager.decode_data_items(self.flaskapp.user_manager.token_manager.decrypt_string(cookie["_user_id"]))
         if data_items:
             user_id = data_items[0]
@@ -249,6 +259,10 @@ class TusFilter(object):
 
         if not token_is_valid:
             raise UserNotAuthorized()
+        elif user is not None:
+            self.user = user
+        else:
+            raise UserNotAuthenticated()
 
         x_method = env.req.headers.get('X-HTTP-Method-Override')
         method = x_method or env.req.method

@@ -62,6 +62,7 @@ class Album(db.Model):
     description = db.Column(db.String())
     total_files = db.Column(db.Integer)
     cover_photo_id = db.Column(db.Integer, db.ForeignKey("media.id"))
+    parent = db.Column(db.Integer)
 
 
 class Tag(db.Model):

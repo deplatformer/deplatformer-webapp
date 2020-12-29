@@ -61,7 +61,7 @@ class Album(db.Model):
     name = db.Column(db.String())
     description = db.Column(db.String())
     total_files = db.Column(db.Integer)
-    cover_photo_id = db.Column(db.Integer, db.ForeignKey("media.id"))
+    cover_photo_id = db.Column(db.Integer)
     parent = db.Column(db.Integer)
 
 

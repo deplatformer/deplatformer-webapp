@@ -3,15 +3,23 @@ import os
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from flask_user import UserManager, login_required
+from sqlalchemy import MetaData
 
 from .config import app_config
 
-db = SQLAlchemy()
-migrate = Migrate()
-
 from .lib.tusfilter import TusFilter
 from .helpers.media_helpers import handle_uploaded_file
+
+naming_convention = {
+    "ix": 'ix_%(column_0_label)s',
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(column_0_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s"
+}
+
+db = SQLAlchemy(metadata=MetaData(naming_convention=naming_convention))
+migrate = Migrate()
 
 
 def upload_resumable_callback(app, tmpfileid, user):
@@ -61,6 +69,7 @@ def create_app():
     migrate.init_app(
         app,
         db,
+        render_as_batch=True
     )
 
     app.wsgi_app = TusFilter(

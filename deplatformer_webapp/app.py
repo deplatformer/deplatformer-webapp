@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask_user import UserManager, login_required
 from sqlalchemy import MetaData
 
 from .config import app_config
@@ -15,8 +16,11 @@ naming_convention = {
     "pk": "pk_%(table_name)s"
 }
 
-from .lib.tusfilter import TusFilter
-from .helpers.media_helpers import handle_uploaded_file
+db = SQLAlchemy(metadata=MetaData(naming_convention=naming_convention))
+migrate = Migrate()
+
+from deplatformer_webapp.lib.tusfilter import TusFilter
+from deplatformer_webapp.helpers.media_helpers import handle_uploaded_file
 
 
 def upload_resumable_callback(app, tmpfileid, user):
@@ -42,9 +46,6 @@ def upload_resumable_callback(app, tmpfileid, user):
     handle_uploaded_file(app, tmpfileid, user)
     return 'End of upload'
 
-
-db = SQLAlchemy(metadata=MetaData(naming_convention=naming_convention))
-migrate = Migrate()
 
 def create_app():
     """Factory function to create app instance"""

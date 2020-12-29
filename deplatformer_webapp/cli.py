@@ -82,7 +82,7 @@ def deletedb():
     from .app import app
 
     os.remove(os.path.join(app.config["BASEDIR"], app.config["CORE_SQLITE_DB"]))
-    os.remove(os.path.join(app.config["BASEDIR"], app.config["FACEBOOK_SQLITE_DB"]))
+    os.remove(os.path.join(app.config["BASEDIR"], app.config["MEDIA_SQLITE_DB"]))
     click.echo(f"Databases deleted successfully!")
 
 

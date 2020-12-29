@@ -39,30 +39,18 @@ class Media(db.Model):
     __bind_key__ = "media"
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
+    parent_id = db.Column(db.Integer, index=True)
+    post_id = db.Column(db.Integer, index=True)
+    filepath = db.Column(db.String(), index=True)
+    container_type = db.Column(db.String())
+    media_type = db.Column(db.String())
+    encrypted_file = db.Column(db.Integer)
     timestamp = db.Column(db.String())
-    title = db.Column(db.String())
+    name = db.Column(db.String())
     description = db.Column(db.String())
     latitude = db.Column(db.String())
     longitude = db.Column(db.String())
     orientation = db.Column(db.Integer)
-    filepath = db.Column(db.String(), index=True)
-    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
-    album_id = db.Column(db.Integer, db.ForeignKey("albums.id"))
-    media_type = db.Column(db.String())
-    thumbnail = db.Column(db.Integer)
-
-
-class Album(db.Model):
-    __tablename__ = "albums"
-    __bind_key__ = "media"
-
-    id = db.Column(db.Integer, nullable=False, primary_key=True)
-    last_modified = db.Column(db.String())
-    name = db.Column(db.String())
-    description = db.Column(db.String())
-    total_files = db.Column(db.Integer)
-    cover_photo_id = db.Column(db.Integer)
-    parent = db.Column(db.Integer)
 
 
 class Tag(db.Model):
@@ -71,3 +59,7 @@ class Tag(db.Model):
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     tag = db.Column(db.String())
+
+
+db.Index('ix_media_parent_id_container_type', Media.parent_id, Media.container_type)
+db.Index('ix_media_parent_id_media_type', Media.parent_id, Media.media_type)

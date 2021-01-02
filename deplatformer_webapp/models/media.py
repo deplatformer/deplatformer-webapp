@@ -39,13 +39,16 @@ class Media(db.Model):
     __bind_key__ = "media"
 
     id = db.Column(db.Integer, nullable=False, primary_key=True)
+    user_id = db.Column(db.Integer, index=True)
     parent_id = db.Column(db.Integer, index=True)
     post_id = db.Column(db.Integer, index=True)
     filepath = db.Column(db.String(), index=True)
     container_type = db.Column(db.String())
     media_type = db.Column(db.String())
+    source = db.Column(db.String())
     encrypted_file = db.Column(db.Integer)
     timestamp = db.Column(db.String())
+    last_modified = db.Column(db.String())
     name = db.Column(db.String())
     description = db.Column(db.String())
     latitude = db.Column(db.String())
@@ -63,3 +66,5 @@ class Tag(db.Model):
 
 db.Index('ix_media_parent_id_container_type', Media.parent_id, Media.container_type)
 db.Index('ix_media_parent_id_media_type', Media.parent_id, Media.media_type)
+
+#user_id, parent_id, container_type, source, media_type, name, filepath

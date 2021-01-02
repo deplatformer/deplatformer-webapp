@@ -20,7 +20,7 @@ db = SQLAlchemy(metadata=MetaData(naming_convention=naming_convention))
 migrate = Migrate()
 
 from deplatformer_webapp.lib.tusfilter import TusFilter
-from deplatformer_webapp.helpers.media_helpers import handle_uploaded_file
+from deplatformer_webapp.helpers.mediafile_helpers import handle_uploaded_file
 
 
 def upload_resumable_callback(app, tmpfileid, user):

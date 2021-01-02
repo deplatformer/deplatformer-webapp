@@ -1,7 +1,5 @@
 import os
 import sqlite3
-import traceback
-import zipfile
 from datetime import datetime
 
 from flask import flash, render_template, request
@@ -9,12 +7,10 @@ from flask_user import current_user, login_required
 from pygate_grpc.exceptions import GRPCNotAvailableException
 from sqlalchemy import desc
 
-from deplatformer_webapp.crypto import derive_key_from_usercreds
 
 from ..app import app, db
-from ..helpers import unzip
 from ..helpers.facebook_helpers import clean_nametags, cut_hyperlinks, posts_to_db
-from ..helpers.media_helpers import create_user_dirs, save_upload_file
+from ..helpers.mediafile_helpers import create_user_dirs, save_upload_file
 # from ..helpers.filecoin_helpers import push_dir_to_filecoin
 from ..models import media
 from ..models.user_models import UserDirectories
@@ -43,78 +39,80 @@ def facebook_upload():
     upload_success = False
 
     # Uploading a new file
-    if request.method == "POST":
-        try:
-            facebook_dir = create_user_dirs(current_user, app.config["USER_DATA_DIR"], "facebook")
-
-            # TODO: This whole procedure should be async
-            # Save the uploaded file
-            file_name = save_upload_file(request.files["uploadfile"], facebook_dir)
-            archive_filepath = os.path.join(facebook_dir, file_name)
-            # Unzip the uploaded file
-            unzip_dir = unzip(archive_filepath)
-            # Save dirs to DB
-            directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
-            if directory is None:
-                directory = UserDirectories(user_id=current_user.id, platform="facebook", directory=unzip_dir)
-                db.session.add(directory)
-            else:
-                directory.directory = unzip_dir
-            db.session.commit()
-
-            # TODO: ENCRYPT FILES
-
-            print("Saving posts to database.")
-            (
-                total_posts,
-                max_date,
-                min_date,
-                profile_updates,
-                total_media,
-            ) = posts_to_db(unzip_dir)
-
-            flash(
-                f"Saved {str(total_posts)} posts between {min_date} and {max_date}. This includes {str(profile_updates)} profile updates. {str(total_media)} media files were uploaded.",
-                "alert-success",
-            )
-            upload_success = True
-
-            # Add uploaded and parsed Facebook files to Filecoin
-            print("Encrypting and uploading files to Filecoin")
-            derived_user_key = derive_key_from_usercreds(
-                current_user.username.encode("utf-8"), current_user.password.encode("utf-8")
-            )
-            # TODO: push dir to filecoin
-            # push_dir_to_filecoin(unzip_dir, derived_user_key)
-
-            # TODO: DELETE CACHED COPIES OF FILE UPLOADS
-
-        except (IsADirectoryError, zipfile.BadZipFile):
-            # Return if the user did not provide a file to upload
-            # TODO: Add flash output to facebook_upload template
-            flash(
-                "Please make sure that you've selected a file and that it's in ZIP format.",
-                "alert-danger",
-            )
-        except GRPCNotAvailableException:
-            flash(
-                "Could not connect to Powergate Host.",
-                "alert-danger",
-            )
-        except Exception as e:
-            tb = traceback.TracebackException.from_exception(e)
-            print("".join(tb.format()))
-            print(type(e))
-
-            flash(
-                "An error occured while uploading the archive: " + str(e),
-                "alert-danger",
-            )
+    # if request.method == "POST":
+        # try:
+        #     facebook_dir = create_user_dirs(current_user, app.config["USER_DATA_DIR"], "facebook")
+        #
+        #     # TODO: This whole procedure should be async
+        #     # Save the uploaded file
+        #     file_name = save_upload_file(request.files["uploadfile"], facebook_dir)
+        #     archive_filepath = os.path.join(facebook_dir, file_name)
+        #     # Unzip the uploaded file
+        #     unzip_dir = unzip(archive_filepath)
+        #     # Save dirs to DB
+        #     directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
+        #     if directory is None:
+        #         directory = UserDirectories(user_id=current_user.id, platform="facebook", directory=unzip_dir)
+        #         db.session.add(directory)
+        #     else:
+        #         directory.directory = unzip_dir
+        #     db.session.commit()
+        #
+        #     # TODO: ENCRYPT FILES
+        #
+        #     print("Saving posts to database.")
+        #     (
+        #         total_posts,
+        #         max_date,
+        #         min_date,
+        #         profile_updates,
+        #         total_media,
+        #     ) = posts_to_db(unzip_dir)
+        #
+        #     flash(
+        #         f"Saved {str(total_posts)} posts between {min_date} and {max_date}. This includes {str(profile_updates)} profile updates. {str(total_media)} media files were uploaded.",
+        #         "alert-success",
+        #     )
+        #     upload_success = True
+        #
+        #     # Add uploaded and parsed Facebook files to Filecoin
+        #     print("Encrypting and uploading files to Filecoin")
+        #     derived_user_key = derive_key_from_usercreds(
+        #         current_user.username.encode("utf-8"), current_user.password.encode("utf-8")
+        #     )
+        #     # TODO: push dir to filecoin
+        #     # push_dir_to_filecoin(unzip_dir, derived_user_key)
+        #
+        #     # TODO: DELETE CACHED COPIES OF FILE UPLOADS
+        #
+        # except (IsADirectoryError, zipfile.BadZipFile):
+        #     # Return if the user did not provide a file to upload
+        #     # TODO: Add flash output to facebook_upload template
+        #     flash(
+        #         "Please make sure that you've selected a file and that it's in ZIP format.",
+        #         "alert-danger",
+        #     )
+        # except GRPCNotAvailableException:
+        #     flash(
+        #         "Could not connect to Powergate Host.",
+        #         "alert-danger",
+        #     )
+        # except Exception as e:
+        #     tb = traceback.TracebackException.from_exception(e)
+        #     print("".join(tb.format()))
+        #     print(type(e))
+        #
+        #     flash(
+        #         "An error occured while uploading the archive: " + str(e),
+        #         "alert-danger",
+        #     )
 
     return render_template(
-        "facebook/facebook-upload.html",
-        upload=upload_success,
+        "uploader/uploader.html",
+        platform="facebook",
+        folder="",
         breadcrumb="Facebook / Upload content",
+        user=current_user
     )
 
 

@@ -11,7 +11,8 @@ from PIL import Image
 def create_thumbnail(filepath, filename, media_type):
 
     osfilepath = get_filepath(filepath, filename)
-    osfileoutpath=get_thumbnailpath(filepath, filename)
+    thubnailfilename = get_thumbnailfilename(filename)
+    osfileoutpath=get_filepath(filepath, thubnailfilename)
 
     if media_type == "IMAGE":
         # open file
@@ -43,28 +44,35 @@ def create_thumbnail(filepath, filename, media_type):
                 .output(osfileoutpath, vframes=1)
         )
 
-        print(ff)
+        # print(ff)
 
-        ff.run()
+        ff.run(quiet=True, overwrite_output=True)
 
-    return osfileoutpath
+    return thubnailfilename
 
 
 def get_thumbnailpath(filepath, filename):
-    split = os.path.splitext(filename)
-    thumbfilename = "".join([split[0], split[1], '.thumb', '.jpg'])
 
-    osfileoutpath = os.path.join(filepath, thumbfilename)
-    print("Image:  Thumbpath: %s" % thumbfilename)
+    thumbfilename = get_thumbnailfilename(filename)
+    osfileoutpath = get_filepath(filepath, thumbfilename)
+    # print("Image:  Thumbpath: %s" % thumbfilename)
 
     return osfileoutpath
 
 
+def get_thumbnailfilename(filename):
+    split = os.path.splitext(filename)
+    thumbfilename = "".join([split[0], split[1], '.thumb', '.jpg'])
+
+    return thumbfilename
+
+
 def get_filepath(filepath, filename):
-    print("Image:  Filepath: %s, %s" % (filepath, filename))
+    # print("Image:  Filepath: %s, %s" % (filepath, filename))
     osfilepath = os.path.join(filepath, filename)
 
     return osfilepath
+
 
 def check_gif(image):
     try:

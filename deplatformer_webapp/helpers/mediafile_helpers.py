@@ -13,7 +13,7 @@ from PIL import Image
 
 from deplatformer_webapp.models.media import Media
 from .facebook_helpers import upload_facebook_file
-from .media_helpers import create_thumbnail, get_thumbnailpath
+from .media_helpers import create_thumbnail, get_thumbnailpath, get_thumbnailfilename
 
 from ..app import db as appdb
 from ..models import media
@@ -168,19 +168,19 @@ def register_media(media_object, current_user, parent_node=None):
 
         # only generate thumbnail if media is new, otherwise assume thumb has been generated already
 
-        thumbnailpath = get_thumbnailpath(media_path, filepath)
+        thumbnailfilename = get_thumbnailfilename(filepath)
 
         thumbnail = Media.query.filter_by(user_id=current_user.id, parent_id=media_container.id,
                                           source=source, media_type="THUMBNAIL",
-                                          name=name, filepath=thumbnailpath).first()
+                                          name=name, filepath=thumbnailfilename).first()
         if thumbnail is None:
-            thumbnailpath = create_thumbnail(media_path, filepath, media_type)
+            thumbnailfilename = create_thumbnail(media_path, filepath, media_type)
             thumbnail = Media(
                 user_id=current_user.id,
                 parent_id=media_container.id,
                 timestamp=timestamp,
                 name=name,
-                filepath=thumbnailpath,
+                filepath=thumbnailfilename,
                 media_type="THUMBNAIL",
                 encrypted_file=0
             )

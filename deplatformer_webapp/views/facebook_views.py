@@ -175,7 +175,7 @@ def facebook_memories():
     month_script = datetime.now().strftime("%b")
     year = datetime.now().strftime("%Y")
 
-    facebook_db = sqlite3.connect(app.config["FACEBOOK_SQLITE_DB"])
+    facebook_db = sqlite3.connect(app.config["MEDIA_SQLITE_DB"])
     cursor = facebook_db.cursor()
     # Check if demo data is being used
     if os.path.split(fb_dir)[1][:20] == "facebook-deplatformr":

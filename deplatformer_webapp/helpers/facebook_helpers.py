@@ -241,10 +241,10 @@ def posts_to_db(fb_dir, facebook_node, current_user):
                                 try:
                                     # match filepath to an existing media record
                                     filepath = value["uri"]
-                                    media_file = media.Media.query.filter_by(filepath=filepath).first().id
+                                    media_file = media.Media.query.filter_by(filepath=filepath, container_type="CONTAINER").first()
                                     # Update media record with post_id
-                                    media_obj = media.Media.query.filter_by(id=media_file)
-                                    media_obj.post_id = post_id
+                                    # media_obj = media.Media.query.filter_by(id=media_file)
+                                    media_file.post_id = post_id
                                     appdb.session.commit()
 
                                 except Exception as e:
@@ -274,7 +274,7 @@ def posts_to_db(fb_dir, facebook_node, current_user):
         try:
             # Check whether the update is linked to a media file, if not, loop will continue
             filepath = update["attachments"][0]["data"][0]["media"]["uri"]
-            media_obj = media.Media.query.filter_by(filepath=filepath).first()
+            media_obj = media.Media.query.filter_by(filepath=filepath, container_type="CONTAINER").first()
             if media_obj == None:
                 # Update is not linked to a media file
                 continue

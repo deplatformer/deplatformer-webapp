@@ -149,6 +149,7 @@ def register_media(media_object, current_user, parent_node=None):
 
     media = Media.query.filter_by(user_id=current_user.id, parent_id=media_container.id,
                                   source=source, media_type=media_type, description=description,
+                                  container_type="CLEAR",
                                   name=name, filepath=filepath).first()
     if media is None:
         media = Media(
@@ -160,8 +161,10 @@ def register_media(media_object, current_user, parent_node=None):
             latitude=latitude,
             longitude=longitude,
             orientation=orientation,
+            container_type="CLEAR",
             filepath=filepath,
             media_type=media_type,
+            source=source,
         )
         appdb.session.add(media)
         appdb.session.commit()
@@ -171,7 +174,8 @@ def register_media(media_object, current_user, parent_node=None):
         thumbnailfilename = get_thumbnailfilename(filepath)
 
         thumbnail = Media.query.filter_by(user_id=current_user.id, parent_id=media_container.id,
-                                          source=source, media_type="THUMBNAIL",
+                                          container_type="CLEAR_THUMBNAIL",
+                                          source=source, media_type="IMAGE",
                                           name=name, filepath=thumbnailfilename).first()
         if thumbnail is None:
             thumbnailfilename = create_thumbnail(media_path, filepath, media_type)
@@ -181,8 +185,10 @@ def register_media(media_object, current_user, parent_node=None):
                 timestamp=timestamp,
                 name=name,
                 filepath=thumbnailfilename,
-                media_type="THUMBNAIL",
-                encrypted_file=0
+                container_type="CLEAR_THUMBNAIL",
+                media_type="IMAGE",
+                encrypted_file=0,
+                source=source,
             )
             appdb.session.add(thumbnail)
             appdb.session.commit()

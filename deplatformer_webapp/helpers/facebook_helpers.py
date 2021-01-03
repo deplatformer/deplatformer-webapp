@@ -358,7 +358,7 @@ def posts_to_db(fb_dir, facebook_node, current_user):
 def albums_to_db(fb_dir, facebook_node, current_user):
     from .mediafile_helpers import register_media
     # FB includes one JSON file per album
-    source = "FACEBOOK"
+    source = "facebook"
     files = os.listdir(fb_dir + "/photos_and_videos/album/")
     for file in files:
         file_split = os.path.splitext(file)
@@ -633,7 +633,7 @@ def upload_facebook_file(current_user, file_name, media_dir):
             directory.directory = unzip_dir
 
         facebook_node = Media.query.filter_by(user_id=current_user.id, parent_id=top_node.id, container_type="ALBUM",
-                                              source="FACEBOOK").first()
+                                              source="facebook").first()
         if facebook_node is None:
             facebook_node = Media(
                 user_id=current_user.id,
@@ -641,7 +641,7 @@ def upload_facebook_file(current_user, file_name, media_dir):
                 description="Facebook Media",
                 container_type="ALBUM",
                 parent_id=top_node.id,
-                source="FACEBOOK",
+                source="facebook",
             )
             appdb.session.add(facebook_node)
             appdb.session.commit()

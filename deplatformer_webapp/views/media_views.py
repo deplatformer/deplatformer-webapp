@@ -5,7 +5,7 @@ from datetime import datetime
 from flask import flash, render_template, request
 from flask_user import current_user, login_required
 from pygate_grpc.exceptions import GRPCNotAvailableException
-from sqlalchemy import desc
+from sqlalchemy import desc, select
 
 
 from ..app import app, db
@@ -25,27 +25,54 @@ def media_view():
 
     if directory is None:
         flash(
-            "Facebook data not found.",
+            "Media not found.",
             "alert-danger",
         )
         return render_template(
-            "media/media-view.html",
-            breadcrumb="Media / View content",
-            this_day=day,
-            this_month=month_script,
+            "uploader/uploader.html",
+            breadcrumb="All Media / Upload",
+            user=current_user
         )
 
     # Sort albums so that Profile Pictures, Cover Photos, and Videos come first
-    albums = media.Album.query.order_by(desc("last_modified")).all()
-    #this is where the albums are disambiguated, by album name
+    toplevel = media.Media.query.filter_by(user_id=current_user.id, parent_id=None,
+                                         container_type="ALBUM",
+                                         ).order_by(desc("last_modified")).first()
+
+    source_albums = media.Media.query.filter_by(user_id=current_user.id, parent_id=toplevel.id,
+                                           container_type="ALBUM",
+                                           ).order_by(desc("last_modified")).all()
+
+    # for every album with a parent in source_albums
+    # for every source album, get the children
+    source_albums_ids = [album.id for album in source_albums]
+    second_level_albums = media.Media.query.filter((media.Media.user_id == current_user.id) & (media.Media.container_type == "ALBUM") & (media.Media.parent_id.in_(source_albums_ids))).all()
+
+    # second_level_album_ids = [album.id for album in source_albums]
+
+    second_level_album_objects = []
+    for item in second_level_albums:
+        container = media.Media.query.filter_by(user_id=current_user.id, parent_id=item.id,
+                                    container_type="CONTAINER",
+                                    ).order_by(desc("last_modified")).first()
+        # cover_photo = media.Media.query.filter_by(user_id=current_user.id, parent_id=container.id,
+        #                             container_type="CLEAR_THUMBNAIL",
+        #                             ).order_by(desc("last_modified")).first()
+        album_object = {
+            "album": item,
+            "cover_photo_id": container.id
+        }
+        second_level_album_objects.append(album_object)
+
+    # this is where the albums are disambiguated, by album name
     # todo: perform better unique disambiguation of albums, rather than just by name (currently can't support
-    albums_dict = {album.name: album for album in albums}
+    albums_dict = {album["album"].name: album for album in second_level_album_objects}
     sorted_main_albums = [albums_dict[c] for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
     sorted_main_albums_names = [c for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
     sorted_other_albums = [albums_dict[d] for d in albums_dict if d not in sorted_main_albums_names]
     app.logger.debug(sorted_main_albums)
     return render_template(
-        "facebook/facebook-view.html",
+        "media/media-view.html",
         breadcrumb="Facebook / View content",
         this_day=day,
         this_month=month_script,
@@ -81,11 +108,3 @@ def media_folder_view(
         album=album,
     )
 
-
-@app.route("/facebook-manage")
-@login_required
-def facebook_manage():
-    return render_template(
-        "facebook/facebook-manage.html",
-        breadcrumb="Facebook / Manage content",
-    )

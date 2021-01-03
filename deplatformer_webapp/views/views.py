@@ -70,6 +70,56 @@ def userfile(
 
 
 @app.route(
+    "/userfile/<file_id>/thumbnail",
+    methods=["GET"],
+)
+@login_required
+def userfile_thumbnail(
+    file_id,
+):
+    if file_id is None or file_id == 'None':
+        return "File not found." #TODO: how to make 404?
+
+    # directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
+    # if directory is None:
+    #     return "File not found."
+    # todo: search for 2nd level directories
+
+    # app.logger.debug("file_id: %s" % file_id)
+
+    media_file = media.Media.query.filter_by(user_id=current_user.id, parent_id=file_id, container_type="CLEAR_THUMBNAIL").first()
+
+    if media_file is None:
+        return "File not found."
+    else:
+        source = media_file.source
+        directory_object = UserDirectories.query.filter_by(user_id=current_user.id, platform=source).first()
+        if directory_object is None:
+            return "File not found."
+
+    directory = directory_object.directory
+    filepath = media_file.filepath
+    # media_type = media_file.media_type
+
+    # filepath = None
+    # if platform == "facebook":
+    #     filepath = file.filepath
+
+    # TODO: Determine file type from DB
+
+    if filepath is None or directory is None:
+        return "File not found."
+
+    split = os.path.split(filepath)
+    filename = split[1]
+    fullpath = os.path.join(directory, split[0])
+
+    return send_from_directory(fullpath, filename)
+
+
+
+
+@app.route(
     "/userfile/view/<file_id>",
     methods=["GET"],
 )

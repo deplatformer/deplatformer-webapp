@@ -87,7 +87,7 @@ def create_app():
 app = create_app()
 
 from .models import media, filecoin_models, user_models
-from .views import facebook_views, filecoin_views, views, upload_views
+from .views import media_views, facebook_views, views, upload_views
 
 # Setup Flask-User and specify the User data-model
 user_manager = UserManager(

@@ -7,7 +7,6 @@ from flask_user import current_user, login_required
 from pygate_grpc.exceptions import GRPCNotAvailableException
 from sqlalchemy import desc, select
 
-
 from ..app import app, db
 from ..helpers.facebook_helpers import clean_nametags, cut_hyperlinks, posts_to_db
 from ..helpers.mediafile_helpers import create_user_dirs, save_upload_file
@@ -36,25 +35,26 @@ def media_view():
 
     # Sort albums so that Profile Pictures, Cover Photos, and Videos come first
     toplevel = media.Media.query.filter_by(user_id=current_user.id, parent_id=None,
-                                         container_type="ALBUM",
-                                         ).order_by(desc("last_modified")).first()
+                                           container_type="ALBUM",
+                                           ).order_by(desc("last_modified")).first()
 
     source_albums = media.Media.query.filter_by(user_id=current_user.id, parent_id=toplevel.id,
-                                           container_type="ALBUM",
-                                           ).order_by(desc("last_modified")).all()
+                                                container_type="ALBUM",
+                                                ).order_by(desc("last_modified")).all()
 
     # for every album with a parent in source_albums
-    # for every source album, get the children
     source_albums_ids = [album.id for album in source_albums]
-    second_level_albums = media.Media.query.filter((media.Media.user_id == current_user.id) & (media.Media.container_type == "ALBUM") & (media.Media.parent_id.in_(source_albums_ids))).all()
+    second_level_albums = media.Media.query.filter(
+        (media.Media.user_id == current_user.id) & (media.Media.container_type == "ALBUM") & (
+            media.Media.parent_id.in_(source_albums_ids))).all()
 
     # second_level_album_ids = [album.id for album in source_albums]
 
     second_level_album_objects = []
     for item in second_level_albums:
         container = media.Media.query.filter_by(user_id=current_user.id, parent_id=item.id,
-                                    container_type="CONTAINER",
-                                    ).order_by(desc("last_modified")).first()
+                                                container_type="CONTAINER",
+                                                ).order_by(desc("last_modified")).first()
         # cover_photo = media.Media.query.filter_by(user_id=current_user.id, parent_id=container.id,
         #                             container_type="CLEAR_THUMBNAIL",
         #                             ).order_by(desc("last_modified")).first()
@@ -73,7 +73,7 @@ def media_view():
     app.logger.debug(sorted_main_albums)
     return render_template(
         "media/media-view.html",
-        breadcrumb="Facebook / View content",
+        breadcrumb="Media / View Albums",
         this_day=day,
         this_month=month_script,
         main_albums=sorted_main_albums,
@@ -81,30 +81,52 @@ def media_view():
     )
 
 
-@app.route("/media/<media_id>")
+@app.route("/media/<album_id>")
 @login_required
 def media_folder_view(
-    album_id,
+        album_id,
 ):
-    directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
-    if directory is None:
-        flash(
-            "Facebook data not found.",
-            "alert-danger",
-        )
-        return render_template(
-            "facebook/facebook-view.html",
-            breadcrumb="Facebook / View content ",
-        )
+    # directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
+    # if directory is None:
+    #     flash(
+    #         "Facebook data not found.",
+    #         "alert-danger",
+    #     )
+    #     return render_template(
+    #         "facebook/facebook-view.html",
+    #         breadcrumb="Facebook / View content ",
+    #     )
 
-    album = media.Album.query.filter_by(id=album_id)
-    files = media.Media.query.filter((media.Media.album_id == album_id) & (media.Media.media_type.in_(["IMAGE", "VIDEO"]))).all()
-    print(files)
+    album = media.Media.query.filter_by(user_id=current_user.id, id=album_id).first()
+    containers = media.Media.query.filter((media.Media.parent_id == album_id)
+                                          & (media.Media.container_type.in_(["CONTAINER", "ALBUM"]))
+                                          & (media.Media.media_type.in_(["IMAGE", "VIDEO"]))).all()
+    # print(files)
+
+    album_objects = []
+    for item in containers:
+        # container = media.Media.query.filter_by(user_id=current_user.id, parent_id=item.id,
+        #                             container_type="CONTAINER",
+        #                             ).order_by(desc("last_modified")).first()
+        if item.container_type is "ALBUM":
+            thumbnail = media.Media.query.filter_by(user_id=current_user.id, parent_id=item.id,
+                                                    container_type="CLEAR_THUMBNAIL",
+                                                    ).order_by(desc("last_modified")).first()
+
+            album_object = {
+                "album": item,
+                "cover_photo_id": thumbnail.id
+            }
+        else:
+            album_object = {
+                "container": item,
+            }
+
+        album_objects.append(album_object)
 
     return render_template(
-        "facebook/facebook-album.html",
-        breadcrumb="Facebook / View content / Albums",
-        files=files,
+        "media/media-album.html",
+        breadcrumb="Media / View content / Albums",
+        containers=album_objects,
         album=album,
     )
-

@@ -120,15 +120,15 @@ def userfile_thumbnail(
 
 
 @app.route(
-    "/userfile/view/<file_id>",
+    "/userfile/view/<container_id>",
     methods=["GET"],
 )
 @login_required
 def userfileview(
     # platform,
-    file_id,
+    container_id,
 ):
-    if file_id is None or file_id == 'None':
+    if container_id is None or container_id == 'None':
         return "File not found."
     # TODO: how to make 404 (instead of 200)?
 
@@ -140,8 +140,7 @@ def userfileview(
 
     # file = media.Media.query.filter_by(user_id=current_user.id, container_type="CONTAINER", id=file_id).first()
 
-    media_file = media.Media.query.filter_by(user_id=current_user.id, id=file_id, container_type="CONTAINER").first()
-
+    media_file = media.Media.query.filter_by(user_id=current_user.id, id=container_id, container_type="CONTAINER").first()
 
     if media_file is None:
         return "File not found."

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div style="margin-left: 20px;">
+
+<H1 class="header">{{ album.name }}</H1>
+
+{% if album[3] %}
+  <div class="small_note">{{ album.description }}</div>
+  <hr style="margin: 10px 0" />
+{% endif %}
+
+<div class="small_note"><a href="{{ url_for('facebook_view') }}">back</a></div>
+
+<div id="albums">
+
+{% for container in containers %}
+
+  {% if (loop.index == 1) %}
+    <div class="row">
+  {% endif %}
+
+  <div class="col">
+    <div class="card" style="margin-top: 30px; text-align:center; border: 0;">
+        <a href="/userfile/view/{{ container.container.id }}">
+        <img class="card-img-top img-fluid" src="/userfile/{{ container.container.id }}/thumbnail" title="posted {{ container.container.timestamp }}">
+        </a>
+      {% if container.container.description %}
+        <div class="card-body">
+        <p class="card-text"><div class="small_note">{{ container.container.description }}</div></p>
+        </div>
+      {% endif %}
+    </div>
+ 
+ </div> <!-- column -->
+
+  {% if loop.index % 4 == 0 %}
+    </div> <!-- row -->
+     <div class="row">
+  {% endif %}
+  
+{% endfor %}
+
+<!-- might have an open row div remaining -->
+
+
+</div> <!-- albums -->
+</div>
+
+{% endblock %}
+
+

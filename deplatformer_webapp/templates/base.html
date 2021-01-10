@@ -54,8 +54,8 @@
                         <b class="caret"></b>
                     </a>
                     <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">
-                        <li><a class="submenu" href="{{ url_for('filecoin_files') }}" ><i class="fa fa-caret-right"></i>Files</a></li>
-                        <li><a class="submenu" href="{{ url_for('filecoin_wallets') }}"><i class="fa fa-caret-right"></i>Wallets</a></li>
+                        <li><a class="submenu" href="{#{ url_for('filecoin_files') }}" ><i class="fa fa-caret-right"></i>Files</a></li>
+                        <li><a class="submenu" href="{#{ url_for('filecoin_wallets') #}}"><i class="fa fa-caret-right"></i>Wallets</a></li>
                     </ul>
                 </li>
                 <li>
@@ -119,8 +119,8 @@
     </main>
 
 
-<script src="{{ url_for('static', filename='js/jquery-3.5.0.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery-3.5.0.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/bootstrap.min.js') }}"></script>
 {# *** Allow sub-templates to insert extra html to the bottom of the body *** #}
 {% block extra_js %}{% endblock %}
 

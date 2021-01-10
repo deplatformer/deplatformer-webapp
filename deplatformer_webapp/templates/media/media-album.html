@@ -15,7 +15,7 @@
 
 <div id="albums">
 
-{% for file in files %}
+{% for container in containers %}
 
   {% if (loop.index == 1) %}
     <div class="row">
@@ -23,12 +23,12 @@
 
   <div class="col">
     <div class="card" style="margin-top: 30px; text-align:center; border: 0;">
-        <a href="/userfile/facebook/view/{{ file.id }}">
-        <img class="card-img-top img-fluid" src="/userfile/facebook/{{ file.thumbnail }}" title="posted {{ file.timestamp }}">
+        <a href="/userfile/view/{{ container.container.id }}">
+        <img class="card-img-top img-fluid" src="/userfile/{{ container.container.id }}/thumbnail" title="posted {{ container.container.timestamp }}">
         </a>
-      {% if file.description %}
+      {% if container.container.description %}
         <div class="card-body">
-        <p class="card-text"><div class="small_note">{{ file.description }}</div></p>
+        <p class="card-text"><div class="small_note">{{ container.container.description }}</div></p>
         </div>
       {% endif %}
     </div>

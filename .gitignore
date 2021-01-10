@@ -85,5 +85,10 @@ _meta
 build/
 dist/
 versions_bkp
+tmp/
 deplatformer-electron/static
 deplatformer-electron/src/static/
+deplatformer-electron/static/
+deplatformer-electron/node_modules/
+deplatformer-electron/out/
+

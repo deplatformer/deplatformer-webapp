@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<!--<div class="small_note"><a href="">back</a></div>-->
+<!-- url_for('facebook_album', album_id=file.album_id) -->
+
+<div class="media-container">
+      <a target="_blank" href="/userfile/{{ media_file.id }}" >
+          {% if media_file.media_type == "VIDEO" %}
+        <div class="media-view embed-responsive embed-responsive-4by3">
+          <video controls><source src="/userfile/{{ media_file.id }}" /></video>
+        </div>
+      {% else %}
+        <img class="media-view" src="/userfile/{{ media_file.id }}" title="posted {{ media_file.timestamp }}">
+      {% endif %}
+      {% if media_file.description %}
+        <div class="card-body">
+            <p class="card-text"><div class="small_note">{{ media_file.description }}</div></p>
+        </div>
+      {% endif %}
+    </a>
+
+</div>
+
+{% endblock %}
+
+

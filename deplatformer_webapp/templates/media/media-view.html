@@ -25,12 +25,12 @@
 
   <div class="col">
 
-    <a href="/facebook-album/{{ album.id }}">
+    <a href="/media/{{ album.album.id }}">
     <div class="card" style="margin-top: 30px; text-align:center">
-        <img class="card-img-top img-fluid" src="/userfile/facebook/{{ album.cover_photo_id }}" alt="Card image cap">
+        <img class="card-img-top img-fluid" src="/userfile/{{ album.cover_photo_id }}/thumbnail" alt="Card image cap">
       <div class="card-body">
-          <p class="card-text">{{ album.name }}</p> </a>
-          <p class="card-text small_note">  {{ album.total_files}} files</p>
+          <p class="card-text">{{ album.album.name }}</p> </a>
+<!--          <p class="card-text small_note">  {{ album.total_files}} files</p>-->
       </div>
     </div>
  
@@ -60,12 +60,12 @@
 
   <div class="col">
 
-    <a href="/facebook-album/{{ album.id }}">
+    <a href="/media/{{ album.album.id }}">
     <div class="card" style="margin-top: 30px; text-align:center">
-        <img class="card-img-top img-fluid" src="/userfile/facebook/{{ album.cover_photo_id }}" alt="Card image cap">
+        <img class="card-img-top img-fluid" src="/userfile/{{ album.cover_photo_id }}/thumbnail" alt="Card image cap">
       <div class="card-body">
-          <p class="card-text">{{ album.name }}</p> </a>
-          <p class="card-text small_note">  {{ album.total_files}} files</p>
+          <p class="card-text">{{ album.album.name }}</p> </a>
+<!--          <p class="card-text small_note">  {{ album.total_files}} files</p>-->
       </div>
     </div>
 

@@ -334,3 +334,13 @@ a.submenu {
 .page-item.active a.page-link {
     color: #FFF !important;
 }
+
+.media-container {
+    position: relative;
+}
+
+.media-view {
+    height: 65vh;
+    max-width: 100%;
+    margin: 10px;
+}

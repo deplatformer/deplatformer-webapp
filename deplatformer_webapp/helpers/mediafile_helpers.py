@@ -6,6 +6,7 @@ from datetime import datetime
 
 import ftfy
 # from flask import app
+from flask_user import current_user
 from sqlalchemy import asc, desc, func
 from werkzeug.utils import secure_filename
 import ffmpeg
@@ -17,115 +18,120 @@ from .media_helpers import create_thumbnail, get_thumbnailpath, get_thumbnailfil
 
 from ..app import db as appdb
 from ..models import media
+from ..models.user_models import UserDirectories
 
-
-def save_file(media_file, media_info, media_dir, data_dir):
-    # appdb = app.db
-    # FB might include more than one posts JSON file
-    # files = os.listdir(fb_dir + "/posts/")
-
-    #todo: check album
-        #todo: then create album
-        #todo: store created album flag
-
-# save the file
-    filepath = save_upload_file(media_file, media_dir, media_info.get("name", ""), media_info, data_dir)
-
-    # TODO: Get exif
-    # create thumbnail
-
-    thumbpath = create_thumbnail(data_dir, filepath) #get media dir from folder path & provider
-    thumbpath = create_thumbnail(data_dir, filepath) #get media dir from folder path & provider
-
-    thumbnail_media_type = "THUMBNAIL"
-
-    thumbnail = media.Media(
-        filepath=thumbpath,
-        media_type=thumbnail_media_type,
-    )
-    appdb.session.add(thumbnail)
-    appdb.session.commit()
-
-    # "relativePath": metadata.get("relativePath", ""),
-    # "name": metadata.get("name", ""),
-    # "type": metadata.get("type", "text/none"),
-    # "tags": metadata.get("tags", ""),
-    # "description": metadata.get("description", ""),
-    # "platform": metadata.get("platform"),
-
-    # todo: add tags
-    # todo: add albums
-
-    new_media_obj = media.Media(
-        # timestamp=media_obj.get("timestamp"),
-        description=media_info.get("description", None),
-        filepath=filepath,
-        # post_id=post_id,
-        # thumbnail=thumbnail.id,
-        title=media_info.get("name", None)
-        # timestamp=timestamp,
-        # post=post,
-        # url=url,
-        # url_label=url_label,
-        # place_name=place_name,
-        # address=address,
-        # latitude=latitude,
-        # longitude=longitude,
-        # profile_update=profile_update,
-
-        # id = db.Column(db.Integer, nullable=False, primary_key=True)
-        # user_id = db.Column(db.Integer, index=True)
-        # parent_id = db.Column(db.Integer, index=True)
-        # post_id = db.Column(db.Integer, index=True)
-        # filepath = db.Column(db.String(), index=True)
-        # container_type = db.Column(db.String())
-        # media_type = db.Column(db.String())
-        # source = db.Column(db.String())
-        # encrypted_file = db.Column(db.Integer)
-        # timestamp = db.Column(db.String())
-        # last_modified = db.Column(db.String())
-        # name = db.Column(db.String())
-        # description = db.Column(db.String())
-        # latitude = db.Column(db.String())
-        # longitude = db.Column(db.String())
-        # orientation = db.Column(db.Integer)
-    )
-    appdb.session.add(new_media_obj)
-    appdb.session.commit()
-    # except Exception as e:
-    #     print("couldn't update media file with post id")
-    #     print(e)
-# except:
-#     # Profile update does not have a media file attached, so don't include it
-#     # continue
-
-    # Recount total number of posts
-    # total_posts = len(media.Post.query.all())
-    #
-    # # Calculate total number of profile updates
-    # profile_updates = total_posts - subtotal_posts
-    #
-    # # Get latest post date
-    # max_date = media.Post.query.order_by(desc("timestamp")).first().timestamp
-    #
-    # # Get first post date
-    # min_date = media.Post.query.order_by(asc("timestamp")).first().timestamp
-    #
-    # # Count total number of media files
-    # total_media = len(media.Media.query.all())
-
-    #todo: use created album flag and update the album with this photo
-
-    return (
-        # total_posts,
-        # max_date,
-        # min_date,
-        # profile_updates,
-        # total_media,
-    )
-
+#
+# def register_file(media_info, media_platform, data_dir):
+#     # appdb = app.db
+#     # FB might include more than one posts JSON file
+#     # files = os.listdir(fb_dir + "/posts/")
+#
+#     #todo: check album
+#         #todo: then create album
+#         #todo: store created album flag
+#
+# # save the file
+# #     filepath = save_upload_file(media_file, media_dir, media_info.get("name", ""), media_info, data_dir)
+#
+#     # TODO: Get exif
+#     # create thumbnail
+#
+#     # thumbpath = create_thumbnail(data_dir, filepath) #get media dir from folder path & provider
+#     thumbpath = create_thumbnail(data_dir, filepath) #get media dir from folder path & provider
+#
+#     thumbnail_media_type = "THUMBNAIL"
+#
+#     thumbnail = media.Media(
+#         filepath=thumbpath,
+#         media_type=thumbnail_media_type,
+#     )
+#     appdb.session.add(thumbnail)
+#     appdb.session.commit()
+#
+#     # "relativePath": metadata.get("relativePath", ""),
+#     # "name": metadata.get("name", ""),
+#     # "type": metadata.get("type", "text/none"),
+#     # "tags": metadata.get("tags", ""),
+#     # "description": metadata.get("description", ""),
+#     # "platform": metadata.get("platform"),
+#
+#     # todo: add tags
+#     # todo: add albums
+#
+#     new_media_obj = media.Media(
+#         # timestamp=media_obj.get("timestamp"),
+#         description=media_info.get("description", None),
+#         filepath=filepath,
+#         # post_id=post_id,
+#         # thumbnail=thumbnail.id,
+#         title=media_info.get("name", None)
+#         # timestamp=timestamp,
+#         # post=post,
+#         # url=url,
+#         # url_label=url_label,
+#         # place_name=place_name,
+#         # address=address,
+#         # latitude=latitude,
+#         # longitude=longitude,
+#         # profile_update=profile_update,
+#
+#         # id = db.Column(db.Integer, nullable=False, primary_key=True)
+#         # user_id = db.Column(db.Integer, index=True)
+#         # parent_id = db.Column(db.Integer, index=True)
+#         # post_id = db.Column(db.Integer, index=True)
+#         # filepath = db.Column(db.String(), index=True)
+#         # container_type = db.Column(db.String())
+#         # media_type = db.Column(db.String())
+#         # source = db.Column(db.String())
+#         # encrypted_file = db.Column(db.Integer)
+#         # timestamp = db.Column(db.String())
+#         # last_modified = db.Column(db.String())
+#         # name = db.Column(db.String())
+#         # description = db.Column(db.String())
+#         # latitude = db.Column(db.String())
+#         # longitude = db.Column(db.String())
+#         # orientation = db.Column(db.Integer)
+#     )
+#     appdb.session.add(new_media_obj)
+#     appdb.session.commit()
+#     # except Exception as e:
+#     #     print("couldn't update media file with post id")
+#     #     print(e)
+# # except:
+# #     # Profile update does not have a media file attached, so don't include it
+# #     # continue
+#
+#     # Recount total number of posts
+#     # total_posts = len(media.Post.query.all())
+#     #
+#     # # Calculate total number of profile updates
+#     # profile_updates = total_posts - subtotal_posts
+#     #
+#     # # Get latest post date
+#     # max_date = media.Post.query.order_by(desc("timestamp")).first().timestamp
+#     #
+#     # # Get first post date
+#     # min_date = media.Post.query.order_by(asc("timestamp")).first().timestamp
+#     #
+#     # # Count total number of media files
+#     # total_media = len(media.Media.query.all())
+#
+#     #todo: use created album flag and update the album with this photo
+#
+#     return (
+#         # total_posts,
+#         # max_date,
+#         # min_date,
+#         # profile_updates,
+#         # total_media,
+#     )
+#
 
 def register_media(media_object, current_user, parent_node=None):
+
+    if parent_node is None:
+        print("No Parent Node Found")
+        # TODO: Add error
 
     name = media_object.get("name", None)
     description = media_object.get("description", None)
@@ -451,6 +457,7 @@ def handle_uploaded_file(app, tmpfileid, user):
         metadata = info_file.get("upload_metadata", None)
 
     platform = metadata.get("platform", "media")
+    album_id = metadata.get("album", None)
     # todo: except empty metadata
 
     # flaskapp.app_context().push()
@@ -464,6 +471,7 @@ def handle_uploaded_file(app, tmpfileid, user):
         "tags": metadata.get("tags", ""),
         "description": metadata.get("description", ""),
         "platform": platform,
+        "album": album_id,
         "file_id": tmpfileid,
         "file_location": file_location,
         "metadata_file_location": metadata_file_location
@@ -477,7 +485,17 @@ def handle_uploaded_file(app, tmpfileid, user):
     if platform == "facebook":
         upload_facebook_file(user, filepath, media_dir)
     else:
-        save_file(None, media_info, media_info.get("platform", "media"), media_dir)
+        media_info["filepath"] = filepath
+        #     os.path.join(
+        #     platform,
+        #     filepath,
+        # )
+        media_info["media_path"] = media_dir
+        parent_node = Media.query.filter_by(user_id=user.id, parent_id=album_id,
+                                            container_type="ALBUM",
+                                            ).order_by(desc("last_modified")).first()
+        register_media(media_info, user, parent_node)
+        # register_file(media_info, media_info.get("platform", "media"), media_dir)
 #     # Unzip the uploaded file
 #     # unzip_dir = unzip(archive_filepath)
 #     # Save dirs to DB
@@ -533,3 +551,29 @@ def handle_uploaded_file(app, tmpfileid, user):
 # #     )
 
 
+def get_topnode(input_dir=None):
+    from flask import app
+    if input_dir is None:
+        #get the default user dir
+        input_dir = app.config["DATA_DIR"]
+
+
+    top_node = Media.query.filter_by(user_id=current_user.id, parent_id=None, container_type="ALBUM").first()
+    if top_node is None:
+        top_node = Media(
+            user_id=current_user.id,
+            name="Top",
+            description="Media",
+            container_type="ALBUM",
+            parent_id=None,
+            source=None,
+        )
+        appdb.session.add(top_node)
+        appdb.session.commit()
+    directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
+    if directory is None:
+        directory = UserDirectories(user_id=current_user.id, platform="facebook", directory=input_dir)
+        appdb.session.add(directory)
+        appdb.session.commit()
+    else:
+        directory.directory = input_dir

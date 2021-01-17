@@ -297,33 +297,32 @@ def posts_to_db(fb_dir, facebook_node, current_user):
                     # Update existing media record with post_id
                     media_obj.post_id = post_id
                 else:
-                    # TODO: Get exif
-                    # create thumbnail
-
-                    thumbpath = create_thumbnail(fb_dir, filepath)
-
-                    thumbnail_media_type = "THUMBNAIL"
-
-                    thumbnail = media.Media(
-                        timestamp=timestamp,
-                        title=title,
-                        # description=description,
-                        filepath=thumbpath,
-                        post_id=None,
-                        media_type=thumbnail_media_type,
-                    )
-                    appdb.session.add(thumbnail)
-                    appdb.session.commit()
-
-                    new_media_obj = media.Media(
-                        timestamp=media_obj.timestamp,
-                        description=media_obj.description,
-                        filepath=filepath,
-                        post_id=post_id,
-                        thumbnail=thumbnail.id
-                    )
-                    appdb.session.add(new_media_obj)
-                appdb.session.commit()
+                    print("Should be register media here")
+                #
+                #     thumbpath = create_thumbnail(fb_dir, filepath)
+                #
+                #     thumbnail_media_type = "THUMBNAIL"
+                #
+                #     thumbnail = media.Media(
+                #         timestamp=timestamp,
+                #         title=title,
+                #         # description=description,
+                #         filepath=thumbpath,
+                #         post_id=None,
+                #         media_type=thumbnail_media_type,
+                #     )
+                #     appdb.session.add(thumbnail)
+                #     appdb.session.commit()
+                #
+                #     new_media_obj = media.Media(
+                #         timestamp=media_obj.timestamp,
+                #         description=media_obj.description,
+                #         filepath=filepath,
+                #         post_id=post_id,
+                #         thumbnail=thumbnail.id
+                #     )
+                #     appdb.session.add(new_media_obj)
+                # appdb.session.commit()
             except Exception as e:
                 print("couldn't update media file with post id")
                 print(e)

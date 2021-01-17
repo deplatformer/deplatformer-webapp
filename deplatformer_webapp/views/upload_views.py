@@ -13,7 +13,8 @@ from deplatformer_webapp.crypto import derive_key_from_usercreds
 
 from ..app import app, db
 from ..helpers import unzip
-from ..helpers.mediafile_helpers import create_user_dirs, save_file
+from ..helpers.mediafile_helpers import create_user_dirs
+# save_file
 # from ..helpers.filecoin_helpers import push_dir_to_filecoin
 from ..models import media
 from ..models.user_models import UserDirectories

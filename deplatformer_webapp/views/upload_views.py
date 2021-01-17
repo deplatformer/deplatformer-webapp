@@ -20,7 +20,7 @@ from ..models.user_models import UserDirectories
 
 @app.route("/upload")
 @login_required
-def media():
+def upload():
 
     return render_template(
         "uploader/uploader.html",

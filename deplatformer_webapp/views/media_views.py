@@ -2,7 +2,7 @@ import os
 import sqlite3
 from datetime import datetime
 
-from flask import flash, render_template, request
+from flask import flash, render_template, request, redirect, url_for
 from flask_user import current_user, login_required
 from pygate_grpc.exceptions import GRPCNotAvailableException
 from sqlalchemy import desc, select
@@ -96,11 +96,18 @@ def media_folder_view(
     #         "facebook/facebook-view.html",
     #         breadcrumb="Facebook / View content ",
     #     )
+    args = request.args
+
+    if "platform_name" in args:
+        platform_name = args["platform_name"]
+    else:
+        platform_name = None
 
     album = media.Media.query.filter_by(user_id=current_user.id, id=album_id).first()
     containers = media.Media.query.filter((media.Media.parent_id == album_id)
                                           & (media.Media.container_type.in_(["CONTAINER", "ALBUM"]))
-                                          & (media.Media.media_type.in_(["IMAGE", "VIDEO"]))).all()
+                                          # & (media.Media.media_type.in_(["IMAGE", "VIDEO"]))
+                                          ).all()
     # print(files)
 
     album_objects = []
@@ -108,14 +115,18 @@ def media_folder_view(
         # container = media.Media.query.filter_by(user_id=current_user.id, parent_id=item.id,
         #                             container_type="CONTAINER",
         #                             ).order_by(desc("last_modified")).first()
-        if item.container_type is "ALBUM":
-            thumbnail = media.Media.query.filter_by(user_id=current_user.id, parent_id=item.id,
-                                                    container_type="CLEAR_THUMBNAIL",
+        if item.container_type == "ALBUM":
+            first_image = media.Media.query.filter_by(user_id=current_user.id, parent_id=item.id,
+                                                    container_type="CONTAINER",
                                                     ).order_by(desc("last_modified")).first()
+
+            # thumbnail = media.Media.query.filter_by(user_id=current_user.id, parent_id=first_image.id,
+            #                                         container_type="CLEAR_THUMBNAIL",
+            #                                         ).order_by(desc("last_modified")).first()
 
             album_object = {
                 "album": item,
-                "cover_photo_id": thumbnail.id
+                "container": first_image
             }
         else:
             album_object = {
@@ -127,6 +138,26 @@ def media_folder_view(
     return render_template(
         "media/media-album.html",
         breadcrumb="Media / View content / Albums",
+        platform_name=platform_name,
         containers=album_objects,
         album=album,
     )
+
+
+@app.route("/media/platform/<platform_name>")
+@login_required
+def media_platform_view(
+        platform_name,
+):
+
+    # Sort albums so that Profile Pictures, Cover Photos, and Videos come first
+    toplevel = media.Media.query.filter_by(user_id=current_user.id, parent_id=None,
+                                           container_type="ALBUM",
+                                           ).order_by(desc("last_modified")).first()
+
+    platform_album = media.Media.query.filter_by(user_id=current_user.id, parent_id=toplevel.id,
+                                                container_type="ALBUM",
+                                                source=platform_name,
+                                                ).order_by(desc("id")).first()
+
+    return redirect(url_for('media_folder_view', album_id=platform_album.id, platform_name=platform_name))

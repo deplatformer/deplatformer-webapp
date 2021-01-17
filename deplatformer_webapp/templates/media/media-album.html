@@ -11,7 +11,22 @@
   <hr style="margin: 10px 0" />
 {% endif %}
 
-<div class="small_note"><a href="{{ url_for('facebook_view') }}">back</a></div>
+<div class="small_note"><a href="{{ url_for('media_view') }}">back</a></div>
+
+{% if platform_name == "facebook" %}
+<div style="margin-left: 20px;">
+
+<i class="fa fa-caret-right" style="margin-right: 5px;"></i>Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i> <a href="{#{ url_for('filecoin_files') }#}">files</a> on<img src="{{ url_for('static', filename='assets/filecoin-logo2.svg') }}" id="filecoin-logo"/>
+
+<hr style="margin: 20px 0;"/>
+
+
+<i class="fa fa-caret-right" style="margin-right: 5px;"></i>Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i><a href="{{ url_for ('facebook_memories') }}">memories</a> from this day, {{ this_month }} {{ this_day }}.
+
+<hr style="margin: 20px 0;"/>
+
+<i class="fa fa-caret-right" style="margin-right: 5px;"></i>Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i> albums:
+{% endif %}
 
 <div id="albums">
 
@@ -21,19 +36,40 @@
     <div class="row">
   {% endif %}
 
+  {% if (container.album) %}
+  <div class="col">
+    <div class="card" style="margin-top: 30px; text-align:center; border: 0;">
+        <a href="/media/{{ container.album.id }}">
+        <img class="card-img-top img-fluid" src="/userfile/{{ container.container.id }}/thumbnail" title="posted {{ container.container.timestamp }}">
+        </a>
+        <div class="card-body"><p>Album</p>
+      {% if container.album.name %}
+        <p class="card-text"><div class="small_note">{{ container.album.name }}</div></p>
+        {% if container.album.description %}
+            <p class="card-text"><div class="small_note">{{ container.album.description }}</div></p>
+        {% endif %}
+        </div>
+      {% endif %}
+    </div>
+ </div> <!-- column -->
+  {% elif (container.container) %}
   <div class="col">
     <div class="card" style="margin-top: 30px; text-align:center; border: 0;">
         <a href="/userfile/view/{{ container.container.id }}">
         <img class="card-img-top img-fluid" src="/userfile/{{ container.container.id }}/thumbnail" title="posted {{ container.container.timestamp }}">
         </a>
-      {% if container.container.description %}
+      {% if container.container.name %}
         <div class="card-body">
-        <p class="card-text"><div class="small_note">{{ container.container.description }}</div></p>
+        <p class="card-text"><div class="small_note">{{ container.container.name }}</div></p>
+        {% if container.container.description %}
+            <p class="card-text"><div class="small_note">{{ container.container.description }}</div></p>
+        {% endif %}
         </div>
       {% endif %}
     </div>
- 
  </div> <!-- column -->
+  {% endif %}
+
 
   {% if loop.index % 4 == 0 %}
     </div> <!-- row -->

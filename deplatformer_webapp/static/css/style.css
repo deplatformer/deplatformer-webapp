@@ -112,7 +112,7 @@ a {
     width: 225px;
     margin: 0;
     padding: 0;
-    list-style: none;
+
 }
 
 #sidebar-wrapper .sidebar-nav li {
@@ -145,7 +145,7 @@ a.submenu {
     display: inline-block;
     text-indent: 7px;
     color: #000;
-    float: left;
+    /* float: left;  /* # todo: check if needed, removed */
 }
 
 #sidebar-wrapper .sidebar-nav li a .caret {

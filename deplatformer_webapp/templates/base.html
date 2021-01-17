@@ -47,16 +47,22 @@
     <div id="sidebar-wrapper">
         <aside id="sidebar">
             <ul id="sidemenu" class="sidebar-nav" style="margin-top: 80px;">
+<!--                <li>-->
+<!--                    <a class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-2">-->
+<!--                        <div class="float-left"><img src="{{ url_for('static', filename='assets/filecoin-logo.svg') }}" id="filecoin-logo"/></div>-->
+<!--                        <span class="sidebar-title">Filecoin</span>-->
+<!--                        <b class="caret"></b>-->
+<!--                    </a>-->
+<!--                    <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">-->
+<!--                        <li><a class="submenu" href="{#{ url_for('filecoin_files') }}" ><i class="fa fa-caret-right"></i>Files</a></li>-->
+<!--                        <li><a class="submenu" href="{#{ url_for('filecoin_wallets') #}}"><i class="fa fa-caret-right"></i>Wallets</a></li>-->
+<!--                    </ul>-->
+<!--                </li>-->
                 <li>
-                    <a class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-2">
-                        <div class="float-left"><img src="{{ url_for('static', filename='assets/filecoin-logo.svg') }}" id="filecoin-logo"/></div>
-                        <span class="sidebar-title">Filecoin</span>
-                        <b class="caret"></b>
+                    <a class="" href="{{ url_for('media_view') }}">
+                        <span class="sidebar-icon"><i class="fab fa-instagram fa-lg"></i></span>
+                        <span class="sidebar-title">All Media</span>
                     </a>
-                    <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">
-                        <li><a class="submenu" href="{#{ url_for('filecoin_files') }}" ><i class="fa fa-caret-right"></i>Files</a></li>
-                        <li><a class="submenu" href="{#{ url_for('filecoin_wallets') #}}"><i class="fa fa-caret-right"></i>Wallets</a></li>
-                    </ul>
                 </li>
                 <li>
                     <a class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-3">
@@ -67,7 +73,7 @@
                     <ul id="submenu-3" class="panel-collapse collapse panel-switch" role="menu">
                         <li><a a class="submenu" href="{{ url_for('facebook_deplatform') }}"><i class="fa fa-caret-right"></i>Deplatform</a></li>
                         <li><a a class="submenu" href="{{ url_for('facebook_upload') }}"><i class="fa fa-caret-right"></i>Upload content</a></li>
-                        <li><a a class="submenu" href="{{ url_for('facebook_view') }}"><i class="fa fa-caret-right"></i>View content</a></li>
+                        <li><a a class="submenu" href="{{ url_for('media_platform_view', platform_name='facebook') }}"><i class="fa fa-caret-right"></i>View content</a></li>
                         <li><a a class="submenu" href="{{ url_for('facebook_manage') }}"><i class="fa fa-caret-right"></i>Manage content</a></li>
                     </ul>
                 </li>
@@ -119,7 +125,7 @@
     </main>
 
 
-<script src="{{ url_for('static', filename='js/vendor/jquery-3.5.0.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery-3.5.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/bootstrap.min.js') }}"></script>
 {# *** Allow sub-templates to insert extra html to the bottom of the body *** #}
 {% block extra_js %}{% endblock %}

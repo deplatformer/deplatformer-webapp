@@ -115,44 +115,44 @@ def facebook_upload():
         user=current_user
     )
 
-
-@app.route("/facebook-view")
-@login_required
-def facebook_view():
-    day = datetime.now().strftime("%d")
-    month_script = datetime.now().strftime("%b")
-    directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
-
-    if directory is None:
-        flash(
-            "Facebook data not found.",
-            "alert-danger",
-        )
-        return render_template(
-            "facebook/facebook-view.html",
-            breadcrumb="Facebook / View content",
-            this_day=day,
-            this_month=month_script,
-        )
-
-    # Sort albums so that Profile Pictures, Cover Photos, and Videos come first
-    albums = media.Album.query.order_by(desc("last_modified")).all()
-    #this is where the albums are disambiguated, by album name
-    # todo: perform better unique disambiguation of albums, rather than just by name (currently can't support
-    albums_dict = {album.name: album for album in albums}
-    sorted_main_albums = [albums_dict[c] for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
-    sorted_main_albums_names = [c for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
-    sorted_other_albums = [albums_dict[d] for d in albums_dict if d not in sorted_main_albums_names]
-    app.logger.debug(sorted_main_albums)
-    return render_template(
-        "facebook/facebook-view.html",
-        breadcrumb="Facebook / View content",
-        this_day=day,
-        this_month=month_script,
-        main_albums=sorted_main_albums,
-        other_albums=sorted_other_albums,
-    )
-
+#
+# @app.route("/facebook-view")
+# @login_required
+# def facebook_view():
+#     day = datetime.now().strftime("%d")
+#     month_script = datetime.now().strftime("%b")
+#     directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
+#
+#     if directory is None:
+#         flash(
+#             "Facebook data not found.",
+#             "alert-danger",
+#         )
+#         return render_template(
+#             "facebook/facebook-view.html",
+#             breadcrumb="Facebook / View content",
+#             this_day=day,
+#             this_month=month_script,
+#         )
+#
+#     # Sort albums so that Profile Pictures, Cover Photos, and Videos come first
+#     albums = media.Album.query.order_by(desc("last_modified")).all()
+#     #this is where the albums are disambiguated, by album name
+#     # todo: perform better unique disambiguation of albums, rather than just by name (currently can't support
+#     albums_dict = {album.name: album for album in albums}
+#     sorted_main_albums = [albums_dict[c] for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
+#     sorted_main_albums_names = [c for c in ["Videos", "Cover Photos", "Profile Pictures"] if c in albums_dict]
+#     sorted_other_albums = [albums_dict[d] for d in albums_dict if d not in sorted_main_albums_names]
+#     app.logger.debug(sorted_main_albums)
+#     return render_template(
+#         "facebook/facebook-view.html",
+#         breadcrumb="Facebook / View content",
+#         this_day=day,
+#         this_month=month_script,
+#         main_albums=sorted_main_albums,
+#         other_albums=sorted_other_albums,
+#     )
+#
 
 @app.route("/facebook-memories")
 @login_required

@@ -34,7 +34,8 @@ def save_file(media_file, media_info, media_dir, data_dir):
     # TODO: Get exif
     # create thumbnail
 
-    thumbpath = create_thumbnail(data_dir, filepath)
+    thumbpath = create_thumbnail(data_dir, filepath) #get media dir from folder path & provider
+    thumbpath = create_thumbnail(data_dir, filepath) #get media dir from folder path & provider
 
     thumbnail_media_type = "THUMBNAIL"
 
@@ -60,7 +61,7 @@ def save_file(media_file, media_info, media_dir, data_dir):
         description=media_info.get("description", None),
         filepath=filepath,
         # post_id=post_id,
-        thumbnail=thumbnail.id,
+        # thumbnail=thumbnail.id,
         title=media_info.get("name", None)
         # timestamp=timestamp,
         # post=post,
@@ -71,6 +72,23 @@ def save_file(media_file, media_info, media_dir, data_dir):
         # latitude=latitude,
         # longitude=longitude,
         # profile_update=profile_update,
+
+        # id = db.Column(db.Integer, nullable=False, primary_key=True)
+        # user_id = db.Column(db.Integer, index=True)
+        # parent_id = db.Column(db.Integer, index=True)
+        # post_id = db.Column(db.Integer, index=True)
+        # filepath = db.Column(db.String(), index=True)
+        # container_type = db.Column(db.String())
+        # media_type = db.Column(db.String())
+        # source = db.Column(db.String())
+        # encrypted_file = db.Column(db.Integer)
+        # timestamp = db.Column(db.String())
+        # last_modified = db.Column(db.String())
+        # name = db.Column(db.String())
+        # description = db.Column(db.String())
+        # latitude = db.Column(db.String())
+        # longitude = db.Column(db.String())
+        # orientation = db.Column(db.Integer)
     )
     appdb.session.add(new_media_obj)
     appdb.session.commit()

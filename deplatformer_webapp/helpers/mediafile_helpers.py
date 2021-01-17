@@ -429,6 +429,34 @@ def create_user_dirs(user, base_path, media_source):
     return media_dir
 
 
+def get_user_dir(user, base_path, media_source):
+    # Use the user data directory configured for the app
+    upload_path = base_path
+    # if not os.path.exists(upload_path):
+    #     os.makedirs(upload_path)
+
+    # Create a subdirectory per username. Usernames are unique.
+    user_dir = os.path.join(
+        upload_path,
+        str(user.id) + "-" + user.username,
+    )
+    # if not os.path.exists(user_dir):
+    #     os.makedirs(user_dir)
+
+    # Create a Facebook subdirectory.
+    media_dir = os.path.join(
+        user_dir,
+        media_source,
+    )
+    # if os.path.exists(media_dir):
+    #     # Remove an existing directory to avoid dbase entry duplication
+    #     # shutil.rmtree(media_dir) # todo: HIGH PRIORITY fix this for duplicate facebook zips
+    #     print("Path exists")
+    # else:
+    #     os.makedirs(media_dir)
+    return media_dir
+
+
 def save_upload_file(upload_file, directory, name="", media_info=None, data_dir=""):
     # todo:  Name security Please HIGH PRIORITY
     if name == "":

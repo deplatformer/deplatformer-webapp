@@ -6,6 +6,7 @@ from flask_user import current_user, login_required
 
 from ..app import app, db
 from ..crypto import create_user_key_if_not_exists
+from ..helpers.mediafile_helpers import create_user_dirs, get_user_dir
 from ..models import media
 from ..models.user_models import UserDirectories
 
@@ -46,9 +47,10 @@ def userfile(
         source = media_file.source
         directory_object = UserDirectories.query.filter_by(user_id=current_user.id, platform=source).first()
         if directory_object is None:
-            return "File not found."
+            directory = get_user_dir(current_user, app.config["USER_DATA_DIR"], source)
+        else:
+            directory = directory_object.directory
 
-    directory = directory_object.directory
     filepath = media_file.filepath
     # media_type = media_file.media_type
 
@@ -95,9 +97,10 @@ def userfile_thumbnail(
         source = media_file.source
         directory_object = UserDirectories.query.filter_by(user_id=current_user.id, platform=source).first()
         if directory_object is None:
-            return "File not found."
+            directory = get_user_dir(current_user, app.config["USER_DATA_DIR"], source)
+        else:
+            directory = directory_object.directory
 
-    directory = directory_object.directory
     filepath = media_file.filepath
     # media_type = media_file.media_type
 
@@ -148,9 +151,10 @@ def userfileview(
         source = media_file.source
         directory_object = UserDirectories.query.filter_by(user_id=current_user.id, platform=source).first()
         if directory_object is None:
-            return "File not found."
+            directory = get_user_dir(current_user, app.config["USER_DATA_DIR"], source)
+        else:
+            directory = directory_object.directory
 
-    directory = directory_object.directory
     filepath = media_file.filepath
     # media_type = media_file.media_type
 

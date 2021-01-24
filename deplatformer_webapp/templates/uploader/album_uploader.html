@@ -1,6 +1,4 @@
-{% extends "base.html" %}
-
-
+{% extends "media/media-album.html" %}
 
 {% block extra_css %}
 <link href="https://releases.transloadit.com/uppy/v1.23.3/uppy.min.css" rel="stylesheet">
@@ -32,7 +30,7 @@
     //https://uppy.io/docs/uppy/#meta
     uppy.setMeta({ platform: '{{ platform or "media" }}' })
     {% if album %}
-        uppy.setMeta({ album: '{{ album }}' })
+        uppy.setMeta({ album: '{{ album.id }}' })
     {% endif %}
 
 <!--    Use the metadata to store the User ID  (maybe use a custom cookie or JWT) -->
@@ -61,6 +59,7 @@ uppy.on('error', (error, response) => {
 
 {% block content %}
 
+{{super()}}
     <div id="drag-drop-area"></div>
     <div class="DashboardContainer" width="500px" height="500px"></div>
 

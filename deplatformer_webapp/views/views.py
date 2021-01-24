@@ -6,6 +6,7 @@ from flask_user import current_user, login_required
 
 from ..app import app, db
 from ..crypto import create_user_key_if_not_exists
+from ..helpers.media_helpers import create_thumbnail
 from ..helpers.mediafile_helpers import create_user_dirs, get_user_dir
 from ..models import media
 from ..models.user_models import UserDirectories
@@ -117,7 +118,19 @@ def userfile_thumbnail(
     filename = split[1]
     fullpath = os.path.join(directory, split[0])
 
-    return send_from_directory(fullpath, filename)
+    try:
+        return send_from_directory(fullpath, filename)
+    except Exception as e:
+        if e.code == 404:
+            print("Try Thumbnail creation")
+            original_file = media.Media.query.filter_by(user_id=current_user.id, parent_id=file_id,
+                                                     container_type="CLEAR").first()
+            split_original = os.path.split(original_file.filepath)
+            filename_original = split_original[1]
+            create_thumbnail(directory, filename_original, original_file.media_type)
+            return send_from_directory(fullpath, filename)
+        else:
+            raise e
 
 
 

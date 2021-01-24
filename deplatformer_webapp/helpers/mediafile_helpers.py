@@ -195,27 +195,30 @@ def register_media(media_object, current_user, parent_node=None):
 
         # only generate thumbnail if media is new, otherwise assume thumb has been generated already
 
-        thumbnailfilename = get_thumbnailfilename(filepath)
+    thumbnailfilename = get_thumbnailfilename(filepath)
 
-        thumbnail = Media.query.filter_by(user_id=current_user.id, parent_id=media_container.id,
-                                          container_type="CLEAR_THUMBNAIL",
-                                          source=source, media_type="IMAGE",
-                                          name=name, filepath=thumbnailfilename).first()
-        if thumbnail is None:
-            thumbnailfilename = create_thumbnail(media_path, filepath, media_type)
-            thumbnail = Media(
-                user_id=current_user.id,
-                parent_id=media_container.id,
-                timestamp=timestamp,
-                name=name,
-                filepath=thumbnailfilename,
-                container_type="CLEAR_THUMBNAIL",
-                media_type="IMAGE",
-                encrypted_file=0,
-                source=source,
-            )
-            appdb.session.add(thumbnail)
-            appdb.session.commit()
+    thumbnail = Media.query.filter_by(user_id=current_user.id, parent_id=media_container.id,
+                                      container_type="CLEAR_THUMBNAIL",
+                                      source=source, media_type="IMAGE",
+                                      name=name, filepath=thumbnailfilename).first()
+
+    # todo: generate thumbnail if thumbnail file isn't found (not just thumbnail entry in DB)
+
+    if thumbnail is None:
+        thumbnailfilename = create_thumbnail(media_path, filepath, media_type)
+        thumbnail = Media(
+            user_id=current_user.id,
+            parent_id=media_container.id,
+            timestamp=timestamp,
+            name=name,
+            filepath=thumbnailfilename,
+            container_type="CLEAR_THUMBNAIL",
+            media_type="IMAGE",
+            encrypted_file=0,
+            source=source,
+        )
+        appdb.session.add(thumbnail)
+        appdb.session.commit()
 
             # print("Video:  Filepath: %s, %s" % (fb_dir, filepath))
             # osfilepath = os.path.join(fb_dir, filepath)
@@ -519,7 +522,7 @@ def handle_uploaded_file(app, tmpfileid, user):
         #     filepath,
         # )
         media_info["media_path"] = media_dir
-        parent_node = Media.query.filter_by(user_id=user.id, parent_id=album_id,
+        parent_node = Media.query.filter_by(user_id=user.id, id=album_id,
                                             container_type="ALBUM",
                                             ).order_by(desc("last_modified")).first()
         register_media(media_info, user, parent_node)

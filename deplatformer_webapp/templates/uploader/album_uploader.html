@@ -1,12 +1,14 @@
 {% extends "media/media-album.html" %}
 
 {% block extra_css %}
+{{super()}}
 <link href="https://releases.transloadit.com/uppy/v1.23.3/uppy.min.css" rel="stylesheet">
 {% endblock %}
 
 
 
 {% block extra_js %}
+{{super()}}
 <script src="https://releases.transloadit.com/uppy/v1.23.3/uppy.min.js"></script>
 <script>
 

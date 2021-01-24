@@ -28,6 +28,129 @@
 <i class="fa fa-caret-right" style="margin-right: 5px;"></i>Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i> albums:
 {% endif %}
 
+<div class="clearfix" style="padding-top: 20px">
+    <div class="container float-left" style="padding-left: 0px">
+      <!-- Trigger the modal with a button -->
+      <button
+        type="button"
+        class="btn btn-info btn-lg"
+        data-toggle="modal"
+        data-target="#myModal"
+      >
+        Create Album
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-info btn-lg"
+        data-toggle="modal"
+        data-target="#myDeleteModal"
+      >
+        Delete Album
+      </button>
+
+      <!-- Modal -->
+      <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog">
+          <!-- Modal content-->
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-body">
+              <h3>Create new Album</h3>
+              <form action="/media/album/create" id="newAlbum" method="post">
+                <p style="color: red; display: none;" id="errUsr">
+                  Folder must have a name.
+                </p>
+                <div>
+
+
+                  <div class="form-group">
+                    <input
+                        type="text"
+                      class="form-control shrMsg"
+                      placeholder="Album name"
+                      name="album_name"
+                    />
+                    <textarea
+                      class="form-control shrMsg"
+                      placeholder="Album Description"
+                      name="album_description"
+                    ></textarea>
+                    <input type="hidden" name="album_id" value="{{ album.id }}" />
+                  </div>
+                </div>
+                <div class="container">
+                  <div class="form-group shrBtns">
+
+                    <button
+                      class="btn btn-default shrBtn"
+                      data-dismiss="modal"
+                      style="margin-left: 3px;"
+                    >
+                      Cancel
+                    </button>
+                    <button  type="submit" value="Submit" class="btn btn-primary shrBtn">Save</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Modal -->
+      <div class="modal fade" id="myDeleteModal" role="dialog">
+        <div class="modal-dialog">
+          <!-- Modal content-->
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-body">
+              <h3>Delete Album</h3>
+              <form action="/media/album/delete" id="delAlbum" method="post">
+
+                <div>
+
+
+                  <div class="form-group">
+                    <input type="hidden" name="album_id" value="{{ album.id }}" />
+                  </div>
+                </div>
+                <div class="container">
+                  <div class="form-group shrBtns">
+
+                    <button
+                      class="btn btn-default shrBtn"
+                      data-dismiss="modal"
+                      style="margin-left: 3px;"
+                    >
+                      Cancel
+                    </button>
+                    <button  type="submit" value="Submit" class="btn btn-primary shrBtn">Delete Album</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+
+
+
+      <!-- Trigger the modal with a button -->
+
+
+
+
+
+</div>
+
+
+
 <div id="albums">
 
 {% for container in containers %}
@@ -40,24 +163,24 @@
   <div class="col">
     <div class="card" style="margin-top: 30px; text-align:center; border: 0;">
         <a href="/media/{{ container.album.id }}">
-        <img class="card-img-top img-fluid" src="/userfile/{{ container.container.id }}/thumbnail" title="posted {{ container.container.timestamp }}">
-        </a>
-        <div class="card-body"><p>Album</p>
+        <img class="card-img-top img-fluid" src="/userfile/{{ container.container.id }}/thumbnail" {% if container.container.timestamp %} title="posted {{ container.container.timestamp }}" {% endif %}>
+
       {% if container.album.name %}
-        <p class="card-text"><div class="small_note">{{ container.album.name }}</div></p>
+        <div class="card-body"><h6>Album: {{ container.album.name }} </h6>
         {% if container.album.description %}
             <p class="card-text"><div class="small_note">{{ container.album.description }}</div></p>
         {% endif %}
         </div>
       {% endif %}
+
+        </a>
     </div>
  </div> <!-- column -->
   {% elif (container.container) %}
   <div class="col">
     <div class="card" style="margin-top: 30px; text-align:center; border: 0;">
         <a href="/userfile/view/{{ container.container.id }}">
-        <img class="card-img-top img-fluid" src="/userfile/{{ container.container.id }}/thumbnail" title="posted {{ container.container.timestamp }}">
-        </a>
+        <img class="card-img-top img-fluid" src="/userfile/{{ container.container.id }}/thumbnail" {% if container.container.timestamp %} title="posted {{ container.container.timestamp }}" {% endif %}>
       {% if container.container.name %}
         <div class="card-body">
         <p class="card-text"><div class="small_note">{{ container.container.name }}</div></p>
@@ -66,6 +189,7 @@
         {% endif %}
         </div>
       {% endif %}
+        </a>
     </div>
  </div> <!-- column -->
   {% endif %}
@@ -86,4 +210,50 @@
 
 {% endblock %}
 
+{% block extra_js %}
 
+  <script defer>
+
+
+    $(document).ready(function () {
+
+
+      $("#newAlbum").submit(function (event) {
+
+      // Stop form from submitting normally
+        /*
+        var isValid = $(e.target).parents('form').isValid();
+        if(!isValid) {
+          e.preventDefault(); //prevent the default action
+        }
+        */
+
+/*
+      // Get some values from elements on the page:
+      var $form = $( this ),
+        album_name = $form.find( "input[name='albumName']" ).val(),
+        album_description = $form.find( "textarea[name='albumDescription']" ).val(),
+        album_id = {{ album.id }},
+        url = $form.attr( "action" );
+      $.ajax({ url: url,
+         type: 'POST',
+         //beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', '#{form_authenticity_token}')},
+         //dataType: "json",
+         data: { album_name: album_name, album_description: album_description, album_id: album_id } ,
+         success: function (res) {
+            // check redirect
+            if (res.redirect) {
+                window.location.href = res.redirect_url;
+            }
+        }
+        });
+*/
+
+
+      });
+    });
+
+
+</script>
+
+{% endblock %}

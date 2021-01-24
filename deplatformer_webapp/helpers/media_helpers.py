@@ -26,7 +26,7 @@ def create_thumbnail(filepath, filename, media_type):
         # make a copy
         im = image.copy()
 
-        # reference: https://stackoverflow.com/questions/4228530/pil-thumbnail-is-rotating-my-image
+        # reference: https://web.archive.org/web/20210124133445/https://stackoverflow.com/questions/4228530/pil-thumbnail-is-rotating-my-image
         im = ImageOps.exif_transpose(im)
 
         # check mode, if not then convert it
@@ -38,9 +38,9 @@ def create_thumbnail(filepath, filename, media_type):
 
     elif media_type == "VIDEO":
 
-        # https://mhsiddiqui.github.io/2018/02/09/Using-FFmpeg-to-create-video-thumbnails-in-Python/
-        # https://github.com/kkroening/ffmpeg-python/blob/master/examples/README.md#generate-thumbnail-for-video
-        # https://trac.ffmpeg.org/wiki/Create%20a%20thumbnail%20image%20every%20X%20seconds%20of%20the%20video
+        # https://web.archive.org/web/20200916102942/https://mhsiddiqui.github.io/2018/02/09/Using-FFmpeg-to-create-video-thumbnails-in-Python/
+        # https://web.archive.org/web/20210124133606/https://github.com/kkroening/ffmpeg-python/blob/master/examples/README.md#generate-thumbnail-for-video
+        # https://web.archive.org/web/20210113035509/https://trac.ffmpeg.org/wiki/Create%20a%20thumbnail%20image%20every%20X%20seconds%20of%20the%20video
 
         ff = (
             ffmpeg

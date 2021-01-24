@@ -372,6 +372,8 @@ def albums_to_db(fb_dir, facebook_node, current_user):
             name = album_contents.get("name", None)
             cover_photo = None  # get Media file id to use as foreign key
 
+            # todo: add filepath to album
+
             album = Media.query.filter_by(user_id=current_user.id, parent_id=facebook_node.id,
                                           container_type="ALBUM", source=source,
                                           name=name, last_modified=last_modified).first()
@@ -619,7 +621,7 @@ def upload_facebook_file(current_user, file_name, media_dir):
                 description="Media",
                 container_type="ALBUM",
                 parent_id=None,
-                source=None,
+                source="media",
             )
             appdb.session.add(top_node)
             appdb.session.commit()

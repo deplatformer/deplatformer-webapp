@@ -110,7 +110,7 @@ def facebook_upload():
     return render_template(
         "uploader/uploader.html",
         platform="facebook",
-        folder="",
+        album="",
         breadcrumb="Facebook / Upload content",
         user=current_user
     )

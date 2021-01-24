@@ -31,8 +31,8 @@
 
     //https://uppy.io/docs/uppy/#meta
     uppy.setMeta({ platform: '{{ platform or "media" }}' })
-    {% if folder %}
-        uppy.setMeta({ folder: '{{ folder }}' })
+    {% if album %}
+        uppy.setMeta({ album: '{{ album }}' })
     {% endif %}
 
 <!--    Use the metadata to store the User ID  (maybe use a custom cookie or JWT) -->

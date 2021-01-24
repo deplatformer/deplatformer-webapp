@@ -83,7 +83,7 @@ def media_view():
 
 @app.route("/media/<album_id>")
 @login_required
-def media_folder_view(
+def media_album_view(
         album_id,
 ):
     # directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
@@ -144,6 +144,84 @@ def media_folder_view(
     )
 
 
+@app.route("/media/album/create", methods=['POST'])
+@login_required
+def media_album_create(
+):
+
+    args = request.get_json()
+
+    if "album_id" in args:
+        album_id = args["album_id"]
+    else:
+        top_node = media.Media.query.filter_by(user_id=current_user.id, parent_id=None, container_type="ALBUM").first()
+        if top_node is None:
+            top_node = media.Media(
+                user_id=current_user.id,
+                name="Top",
+                description="Media",
+                container_type="ALBUM",
+                parent_id=None,
+                source="media",
+            )
+            db.session.add(top_node)
+            db.session.commit()
+        album_id = top_node.id
+
+    if "album_name" in args:
+        album_name = args["album_name"]
+    else:
+        album_name = None
+        # todo: Error on no album name
+
+    if "description" in args:
+        description = args["description"]
+    else:
+        description = None
+
+    if "source" in args:
+        source = args["source"]
+    else:
+        source = "media"
+
+    album = media.Media.query.filter_by(user_id=current_user.id, id=album_id, container_type="ALBUM").first()
+    # containers = media.Media.query.filter((media.Media.parent_id == album_id)
+    #                                       & (media.Media.container_type.in_(["CONTAINER", "ALBUM"]))
+    #                                       # & (media.Media.media_type.in_(["IMAGE", "VIDEO"]))
+    #                                       ).all()
+    # print(files)
+
+
+    # unix_time = album_contents.get("last_modified_timestamp", None)
+    # last_modified = datetime.fromtimestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S") if unix_time else None
+    # description = album_contents.get("description", None)
+    cover_photo = None  # get Media file id to use as foreign key
+
+    new_album = media.Media.query.filter_by(user_id=current_user.id, parent_id=album.id,
+                                  container_type="ALBUM", source=source,
+                                  name=album_name).first()
+    if new_album is None:
+        # Save new album in db
+        new_album = media.Media(
+            user_id=current_user.id,
+            parent_id=album.id,
+            name=album_name,
+            description=description,
+            last_modified=datetime.now(),
+            # cover_photo_id=cover_photo,
+            source=source,
+            container_type="ALBUM",
+        )
+        db.session.add(new_album)
+        db.session.commit()
+    else:
+        # new album is not none
+        # return a toast saying so
+        print("Album exists")
+
+    # return the new album in the album view
+    return redirect(url_for('media_album_view', album_id=new_album.id, platform_name=source))
+
 @app.route("/media/platform/<platform_name>")
 @login_required
 def media_platform_view(
@@ -160,4 +238,4 @@ def media_platform_view(
                                                 source=platform_name,
                                                 ).order_by(desc("id")).first()
 
-    return redirect(url_for('media_folder_view', album_id=platform_album.id, platform_name=platform_name))
+    return redirect(url_for('media_album_view', album_id=platform_album.id, platform_name=platform_name))

@@ -31,7 +31,7 @@
 
     //https://uppy.io/docs/uppy/#meta
     uppy.setMeta({ platform: '{{ platform or "media" }}' })
-    {% if folder %}
+    {% if album %}
         uppy.setMeta({ album: '{{ album }}' })
     {% endif %}
 

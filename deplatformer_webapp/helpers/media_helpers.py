@@ -5,7 +5,7 @@ import shutil
 from datetime import datetime
 
 import ffmpeg
-from PIL import Image
+from PIL import Image, ImageOps
 
 
 def create_thumbnail(filepath, filename, media_type):
@@ -13,6 +13,7 @@ def create_thumbnail(filepath, filename, media_type):
     osfilepath = get_filepath(filepath, filename)
     thubnailfilename = get_thumbnailfilename(filename)
     osfileoutpath=get_filepath(filepath, thubnailfilename)
+
 
     if media_type == "IMAGE":
         # open file
@@ -24,6 +25,10 @@ def create_thumbnail(filepath, filename, media_type):
 
         # make a copy
         im = image.copy()
+
+        # reference: https://stackoverflow.com/questions/4228530/pil-thumbnail-is-rotating-my-image
+        im = ImageOps.exif_transpose(im)
+
         # check mode, if not then convert it
         if not im.mode == 'RGB':
             im = im.convert('RGB')

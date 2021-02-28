@@ -118,11 +118,12 @@ a {
 #sidebar-wrapper .sidebar-nav li {
     text-indent: 0;
     line-height: 45px;
+    margin-top: 15px;
 }
 
 #sidebar-wrapper .sidebar-nav li a {
     display: block;
-    text-decoration: none;
+    text-decoration: none; 
     background: #FFF;
     color: #000;
 
@@ -140,8 +141,8 @@ a.submenu {
 #sidebar-wrapper .sidebar-nav li a .sidebar-icon {
     width: 45px;
     height: 45px;
-    font-size: 14px;
-    padding: 0 2px;
+    font-size: 25px;
+    margin-right: 15px;
     display: inline-block;
     text-indent: 7px;
     color: #000;
@@ -153,6 +154,10 @@ a.submenu {
   right: 23px;
   top: auto;
   margin-top: 20px;
+}
+
+.down-chevron {
+    margin-left: 5px;
 }
 
 #sidebar-wrapper .sidebar-nav li ul.panel-collapse {
@@ -178,7 +183,7 @@ a.submenu {
         font-size: 100%;
     }
     #wrapper #sidebar-wrapper {
-        width: 45px;
+        width: 65px;
     }
     #wrapper #page-content-wrapper{
         margin-left: 60px;

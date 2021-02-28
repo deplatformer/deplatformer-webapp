@@ -47,53 +47,23 @@
     <div id="sidebar-wrapper">
         <aside id="sidebar">
             <ul id="sidemenu" class="sidebar-nav" style="margin-top: 80px;">
-<!--                <li>-->
-<!--                    <a class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-2">-->
-<!--                        <div class="float-left"><img src="{{ url_for('static', filename='assets/filecoin-logo.svg') }}" id="filecoin-logo"/></div>-->
-<!--                        <span class="sidebar-title">Filecoin</span>-->
-<!--                        <b class="caret"></b>-->
-<!--                    </a>-->
-<!--                    <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">-->
-<!--                        <li><a class="submenu" href="{#{ url_for('filecoin_files') }}" ><i class="fa fa-caret-right"></i>Files</a></li>-->
-<!--                        <li><a class="submenu" href="{#{ url_for('filecoin_wallets') #}}"><i class="fa fa-caret-right"></i>Wallets</a></li>-->
-<!--                    </ul>-->
-<!--                </li>-->
                 <li>
                     <a class="" href="{{ url_for('media_view') }}">
-                        <span class="sidebar-icon"><i class="fab fa-instagram fa-lg"></i></span>
-                        <span class="sidebar-title">All Media</span>
+                        <span class="sidebar-icon"><i class="fa fa-photo-video fa-lg"></i></span>
+                        <span class="sidebar-title">All media</span>
                     </a>
                 </li>
                 <li>
                     <a class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-3">
                         <span class="sidebar-icon"><i class="fab fa-facebook fa-lg"></i></span>
                         <span class="sidebar-title">Facebook</span>
-                        <b class="caret"></b>
+                        <i class="fa fa-chevron-down fa-sm down-chevron"></i>
                     </a>
                     <ul id="submenu-3" class="panel-collapse collapse panel-switch" role="menu">
-                        <li><a a class="submenu" href="{{ url_for('facebook_deplatform') }}"><i class="fa fa-caret-right"></i>Deplatform</a></li>
-                        <li><a a class="submenu" href="{{ url_for('facebook_upload') }}"><i class="fa fa-caret-right"></i>Upload content</a></li>
-                        <li><a a class="submenu" href="{{ url_for('media_platform_view', platform_name='facebook') }}"><i class="fa fa-caret-right"></i>View content</a></li>
-                        <li><a a class="submenu" href="{{ url_for('facebook_manage') }}"><i class="fa fa-caret-right"></i>Manage content</a></li>
+                        <li><a a class="submenu" href="{{ url_for('facebook_deplatform') }}"><i class="fa fa-chevron-right"></i>Deplatform</a></li>
+                        <li><a a class="submenu" href="{{ url_for('facebook_upload') }}"><i class="fa fa-chevron-right"></i>Upload content</a></li>
+                        <li><a a class="submenu" href="{{ url_for('media_platform_view', platform_name='facebook') }}"><i class="fa fa-chevron-right"></i>View content</a></li>
                     </ul>
-                </li>
-                <li>
-                    <a href="{{ url_for('instagram') }}">
-                        <span class="sidebar-icon"><i class="fab fa-instagram fa-lg"></i></span>
-                        <span class="sidebar-title">Instagram</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('icloud') }}">
-                        <span class="sidebar-icon"><i class="fab fa-apple fa-lg"></i></span>
-                        <span class="sidebar-title">iCloud Photos</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('google') }}">
-                        <span class="sidebar-icon"><i class="fab fa-google fa-lg"></i></span>
-                        <span class="sidebar-title">Google Photos</span>
-                    </a>
                 </li>
             </ul>
         </aside>            

@@ -11,21 +11,14 @@
   <hr style="margin: 10px 0" />
 {% endif %}
 
-<div class="small_note"><a href="{{ url_for('media_view') }}">back</a></div>
-
 {% if platform_name == "facebook" %}
 <div style="margin-left: 20px;">
 
-<i class="fa fa-caret-right" style="margin-right: 5px;"></i>Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i> <a href="{#{ url_for('filecoin_files') }#}">files</a> on<img src="{{ url_for('static', filename='assets/filecoin-logo2.svg') }}" id="filecoin-logo"/>
+Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i><a href="{{ url_for ('facebook_memories') }}">memories</a> from this day, {{ this_month }} {{ this_day }}.
 
 <hr style="margin: 20px 0;"/>
 
-
-<i class="fa fa-caret-right" style="margin-right: 5px;"></i>Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i><a href="{{ url_for ('facebook_memories') }}">memories</a> from this day, {{ this_month }} {{ this_day }}.
-
-<hr style="margin: 20px 0;"/>
-
-<i class="fa fa-caret-right" style="margin-right: 5px;"></i>Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i> albums:
+Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i> albums:
 {% endif %}
 
 <div class="clearfix" style="padding-top: 20px">

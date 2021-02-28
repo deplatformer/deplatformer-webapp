@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Deplatformr - Prototype</title>
+<title>Deplatformer</title>
 
 <link rel="shortcut icon" href="{{ url_for('static', filename='assets/favicon.ico') }}">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
@@ -26,7 +26,7 @@
 
 <div class="navbar navbar-expand fixed-top" id="mainNav">
     <div class="navbar-brand">
-    <a href="{{ url_for('homepage') }}"><img src="{{ url_for('static', filename='assets/deplatformr-white.png') }}" class="img-fluid" /></a>
+    <a href="{{ url_for('homepage') }}"><img src="{{ url_for('static', filename='assets/deplatformer-white-header.png') }}" class="img-fluid" /></a>
     </div>
     <ul class="navbar-nav ml-auto">
         {% if call_or_get(current_user.is_authenticated) %}

@@ -254,6 +254,10 @@ a.submenu {
     margin: 20px 0;
 }
 
+.help-text {
+    padding-top: 5rem;
+}
+
 .highlight{
     background-color: #8EE4AF;
     color: #000;

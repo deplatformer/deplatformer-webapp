@@ -2,20 +2,23 @@
 
 {% block content %}
 
-<h1 class="header">How to export and deplatform your Facebook content</h1>
+<h1 class="header">How to deplatform yourself from Facebook</h1>
 
-<p>Fortunately, Facebook has provided a way to export your Facebook content for a number of years.  They recently added the ability format your metadata in <a href="https://en.wikipedia.org/wiki/JSON">JSON</a> notation which makes it easier for services like Deplatformr to re-purpose it.</p>
-
-<p>The process is quite simple and illustrated below.</p>
+<p>The process is quite simple and described step by step below.</p>
 <ol>
-    <li>Request a download.</li>
-    <li>Wait for your download.</li>
-    <li>Save your download.</li>
+    <li><a href="#1">Request a content download.</a></li>
+    <li><a href="#2">Wait for your download.</a></li>
+    <li><a href="#3">Save your download.</a></li>
+    <li><a href="#4">Upload your content to Deplatformer.</a></li>
+    <li><a href="#5">Delete your Facebook account.</a></li>
 </ol>
 
 <hr style="margin-bottom: 30px;">
 
-<h3>Step 1: Request a download</h3>
+<section id="1" class="help-text">
+<h2>Step 1: Request a content download.</h2>
+<p>Facebook has provided a way to export your content for a number of years. More recently they added the ability to format your metadata in <a href="https://en.wikipedia.org/wiki/JSON">JSON</a> notation which makes it easier for services like Deplatformer to re-purpose it.</p>
+
 1.a) Login to your Facebook account and select <span class="highlight">Settings</span> from the top menu.
 
 <p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step1a.png') }}" class="instructions"/><p>
@@ -42,18 +45,22 @@
 1.e) Facebook begins to prepare your download package.
 
 <p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step1e.png') }}" class="instructions img-fluid"/><p>
+</section>
 
-<h2>Step 2: Wait for your download</h2>
+<section id="2" class="help-text">
+<h2>Step 2: Wait for your download.</h2>
 
-2.a) Using the address associated with your account, Facebook will send you a notification email letting you know that your download package is being created. Depending on the size of your account and the current demand on Facebook servers this could take a while. However, the average Facebook account will only take a few minutes to prepare a download package.
+2.a) Using the email address associated with your account, Facebook will send you a notification email letting you know that your download package is being created. Depending on the size of your account and the current demand on Facebook servers this could take a while. However, the average Facebook account will only take a few minutes to prepare a download package.
 
 <p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step2a.png') }}" class="instructions inmg-fluid"/><p>
 
 2.b) Facebook will send you a notification email letting you know when your download package is available. You will also see a notification pop-up in Facebook if you are logged in at this time.
 
 <p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step2b.png') }}" class="instructions"/><p>
+</section>
 
-<h2>Step 3: Save your download</h2>
+<section id="3" class="help-text">
+<h2>Step 3: Save your download.</h2>
 <p>3.a) Login to Facebook and return to <span class="highlight">Settings</span> > <span class="highlight">Your Facebook Information</span> > <span class="highlight">Download Your Information</span>.</p>
 
 <p style="margin-top: 10px;">This time select the <span style="font-weight: bold;">Available Copies</span> tab to the right of <span style="font-weight: bold;">Request Copy</span>.</p>
@@ -69,14 +76,33 @@
 3.c) Choose a place on your computer to save the <span style="font-weight: bold;">.zip</span> file containing your Facebook content and metadata.
 
 <p><img src="{{ url_for('static', filename='assets/Facebook/Facebook-step3c.png') }}" class="instructions"/><p>
+</section>
 
-<h2>Next steps</h2>
-Go to  <span style="font-weight: bold;"><a href="{{ url_for('facebook_upload') }}">Facebook > Upload content</a></span> to move this <span style="font-weight: bold;">.zip</span> file to Deplatformr and have it re-process and backup your Facebook content to decentralized Filecoin storage.
+<section id="4" class="help-text">
+<h2>Step 4: Upload your content to Deplatformer.</h2>
+<p>Congratulations! You have liberated your Facebook content. Now it's time to upload it to Deplatformer. Go to  <span style="font-weight: bold;"><a href="{{ url_for('facebook_upload') }}">Facebook > Upload content</a></span> to move this <span style="font-weight: bold;">.zip</span> file to Deplatformer and have it re-process your Facebook content.</p>
 
-<hr style="margin: 20px 0;"/>
-<span class="highlight"><span style="font-weight: bold;">PLEASE NOTE:</span></span>
-<p style="margin-top: 10px;"><em>This is a prototype version of Deplatformr. We are going to assume that you've followed the steps above and that this file: 
-    <p style="margin-top: 10px;"><i class="fa fa-caret-right" style="margin-right: 10px;"></i><a href="{{ url_for('static', filename='sample_data/facebook-deplatformr.zip') }}">facebook-deplatformr.zip</a></p>
-<p style="margin-top: 10px;">is the one made available to you by Facebook. Please download it and use it to continue testing Deplatformr, starting with the <span style="font-weight: bold;"><a href="{{ url_for('facebook_upload') }}">Facebook > Upload content</a></span> step.</em></p>
+<p><span class="highlight"><span style="font-weight: bold;">SAMPLE DATA:</span></span> If you'd like to test-drive Deplatformer with a sample set of stock content then you can download this <a href="{{ url_for('static', filename='sample_data/facebook-deplatformer.zip') }}">facebook-deplatformer.zip</a> file and upload it.</p>
+</section>
+
+<section id="5" class="help-text">
+<h2>Step 5: Delete your Facebook account.</h2>
+<p>You've done the most important part, which is liberating your precious, self-curated content. Now it's time to go all the way and cut the cord with that snooping, manipulating Facebook once and for all. You will finally be free!</p>
+
+<p><span class="highlight"><span style="font-weight: bold;">NOTE:</span></span> this Milestone 1 release of Deplatformer only keeps your data locally and does not yet backup your Facebook content to Filecoin. Therefore, you'll want to keep an extra copy of that .zip file around just in case.</p>
+
+<p>Since deleting your Facebook account is permanent you will want to consider doing the following things beforehand:
+    <ol>
+        <li>Reach out to any family and friends that you want to keep in touch with but who you only contact through Facebook. Ask for up-to-date phone numbers, emails, or third-party chat app contacts.</li>
+        <li>If you've used your Facebook account to log in elsewhere (e.g. Spotify), you'll want to update the settings in those third party apps so that you won't get locked out of them. Switch to using your email address for log-in.</li>
+        <li>You might want to revoke any Facebook app permissions so that they can no longer siphon your personal information from that point forward. You can do this from the "Apps" menu in your account settings.</li>
+        <li>Go to your Facebook settings page. Click on "Your Facebook Information" and select "Deactivation and Deletion" to get things going. Select the "Permanently Delete Account" option and click on the "Continue to Account Deletion" button. Facebook is going to throw up warnings about the consequences of permanently deleting your account before proceeding. Don't get scared off. The consequences are way less damaging to you than continuing to participate in their covert surveillance and marketing ploys.</li>
+        <li>Facebook claims that all the data and posts you've made to the site will be deleted along with your account but, if you don't trust what they say (and who could blame you?), you could go through and delete your posts, photos, and videos yourself.</li>
+        <li>Click "Delete Account"</li>
+        <li>Facebook will ask for your password for security and confirmation that it's you.</li>
+        <li>Facebook will bring up one last, last message saying you'll have 30 days to change your mind before your account is gone forever. Be careful! if you log-in again within those 30 days, it will restore your entire account, reversing all this hard work.</li>
+        <li>It's finally over. You are free from the Facebook overlord. Take a minute to appreciate it. Many of us have a feeling of relief. Some might feel a bit of trepidation. Almost none of use regret it after it sinks in over a few days. Now brag about it to anyone who will listen and please spread the word about Deplatformer if you like what we're doing.</li>
+    </ol>
+</section>
 
 {% endblock %}

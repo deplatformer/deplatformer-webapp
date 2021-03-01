@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from datetime import datetime
 
 from flask import render_template, send_from_directory
 from flask_user import current_user, login_required
@@ -17,9 +18,14 @@ from ..models.user_models import UserDirectories
 def homepage():
     create_user_key_if_not_exists(current_user.username, current_user.password, db)
 
+    day = datetime.now().strftime("%d")
+    month_script = datetime.now().strftime("%B")
+
     return render_template(
         "homepage.html",
         breadcrumb="Home",
+        this_day=day,
+        this_month=month_script
     )
 
 @app.route(

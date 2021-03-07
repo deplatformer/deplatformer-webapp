@@ -286,6 +286,11 @@ def media_platform_view(
                                            container_type="ALBUM",
                                            ).order_by(desc("last_modified")).first()
 
+    # reroute user to deplatform instructions if they have not yet uploaded
+    # content
+    if toplevel is None:
+        return redirect (url_for('facebook_deplatform'))
+
     platform_album = media.Media.query.filter_by(user_id=current_user.id, parent_id=toplevel.id,
                                                 container_type="ALBUM",
                                                 source=platform_name,

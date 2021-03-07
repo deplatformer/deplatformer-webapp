@@ -18,7 +18,7 @@ from ..models.user_models import UserDirectories
 def homepage():
     create_user_key_if_not_exists(current_user.username, current_user.password, db)
 
-    content_present = media.Media.query.first()
+    content_present = media.Media.query.filter_by(user_id=current_user.id).first()
     if content_present is None:
         # If no content has been uploaded yet, route to the Facebook
         # deplatforming instructions as the landing page.

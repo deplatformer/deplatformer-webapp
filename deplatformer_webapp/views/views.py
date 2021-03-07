@@ -2,7 +2,7 @@ import os
 import sqlite3
 from datetime import datetime
 
-from flask import render_template, send_from_directory
+from flask import render_template, send_from_directory, redirect, url_for
 from flask_user import current_user, login_required
 
 from ..app import app, db
@@ -18,15 +18,32 @@ from ..models.user_models import UserDirectories
 def homepage():
     create_user_key_if_not_exists(current_user.username, current_user.password, db)
 
+    content_present = media.Media.query.first()
+    if content_present is None:
+        # If no content has been uploaded yet, route to the Facebook
+        # deplatforming instructions as the landing page.
+        return redirect(url_for('facebook_deplatform'))
+    else:
+        # If content has been uploaded, route to the All media template
+        # as the landing page.
+        return redirect(url_for(('media_view')))
+
+
+@app.route("/help")
+@login_required
+def help():
+
+    # Used to display info about Your Memory feature:
     day = datetime.now().strftime("%d")
     month_script = datetime.now().strftime("%B")
 
     return render_template(
-        "homepage.html",
-        breadcrumb="Home",
+        "help.html",
+        breadcrumb="Help",
         this_day=day,
         this_month=month_script
     )
+
 
 @app.route(
     "/userfile/<file_id>",

@@ -256,6 +256,8 @@ def media_album_delete(
     album = media.Media.query.filter_by(user_id=current_user.id, id=album_id, container_type="ALBUM").first()
 
     if album is not None:
+
+        db.session.commit()
         db.session.delete(album)
         db.session.commit()
         parent_id = album.parent_id
@@ -295,5 +297,8 @@ def media_platform_view(
                                                 container_type="ALBUM",
                                                 source=platform_name,
                                                 ).order_by(desc("id")).first()
+    
+    if platform_album is None:
+        return redirect (url_for('facebook_deplatform'))
 
     return redirect(url_for('media_album_view', album_id=platform_album.id, platform_name=platform_name))

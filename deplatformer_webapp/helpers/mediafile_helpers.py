@@ -128,6 +128,7 @@ from ..models.user_models import UserDirectories
 #
 
 def register_media(media_object, current_user, parent_node=None):
+    appdb.session.commit()
 
     if parent_node is None:
         print("No Parent Node Found")
@@ -219,6 +220,7 @@ def register_media(media_object, current_user, parent_node=None):
         )
         appdb.session.add(thumbnail)
         appdb.session.commit()
+        appdb.session.close()
 
             # print("Video:  Filepath: %s, %s" % (fb_dir, filepath))
             # osfilepath = os.path.join(fb_dir, filepath)
@@ -472,8 +474,8 @@ def save_upload_file(upload_file, directory, name="", media_info=None, data_dir=
         upload_file.save(destination)
     elif media_info is not None:
         #we are using copy instead of move, for now #todo: delete the files on a regular basis
-        shutil.copy(media_info.get("file_location"), destination)  # use copy instead of copy2 to ensure it copies (we don't need the metadata for an uploaded file)
-        #shutil.move(media_info.get("file_location"), destination, copy_function=shutil.copy)  # use copy instead of copy2 to ensure it copies (we don't need the metadata for an uploaded file)
+        #shutil.copy(media_info.get("file_location"), destination)  # use copy instead of copy2 to ensure it copies (we don't need the metadata for an uploaded file)
+        shutil.move(media_info.get("file_location"), destination, copy_function=shutil.copy)  # use copy instead of copy2 to ensure it copies (we don't need the metadata for an uploaded file)
     else:
         raise FileNotFoundError()  # todo: should this be a file not found error?
     return file_name
@@ -582,14 +584,13 @@ def handle_uploaded_file(app, tmpfileid, user):
 # #     )
 
 
-def get_topnode(input_dir=None):
-    from flask import app
+def get_topnode(app, input_dir=None):
+    # from flask import app
     if input_dir is None:
         #get the default user dir
         input_dir = app.config["DATA_DIR"]
 
-
-    top_node = Media.query.filter_by(user_id=current_user.id, parent_id=None, container_type="ALBUM").first()
+    top_node = Media.query.filter_by(user_id=current_user.id, parent_id=None, container_type="ALBUM").order_by(desc("last_modified")).first()
     if top_node is None:
         top_node = Media(
             user_id=current_user.id,
@@ -601,10 +602,45 @@ def get_topnode(input_dir=None):
         )
         appdb.session.add(top_node)
         appdb.session.commit()
-    directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
+    # directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="top").first()
+    # if directory is None:
+    #     directory = UserDirectories(user_id=current_user.id, platform="top", directory=input_dir)
+    #     appdb.session.add(directory)
+    #     appdb.session.commit()
+    # else:
+    #     directory.directory = input_dir
+
+    return top_node
+
+
+def get_usermedianode(app, top_node, input_dir=None):
+    # from flask import app
+    if input_dir is None:
+        #get the default user dir
+        input_dir = app.config["DATA_DIR"]
+
+    media_node = Media.query.filter_by(user_id=current_user.id, parent_id=top_node.id,
+                                                container_type="ALBUM",
+                                                name="My Media"
+                                                ).order_by(desc("last_modified")).first()
+    if media_node is None:
+        media_node = Media(
+            user_id=current_user.id,
+            name="My Media",
+            description="Media",
+            container_type="ALBUM",
+            parent_id=None,
+            source="media",
+        )
+        appdb.session.commit()
+        appdb.session.add(media_node)
+        appdb.session.commit()
+    directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="media").first()
     if directory is None:
-        directory = UserDirectories(user_id=current_user.id, platform="facebook", directory=input_dir)
+        directory = UserDirectories(user_id=current_user.id, platform="media", directory=input_dir)
         appdb.session.add(directory)
         appdb.session.commit()
     else:
         directory.directory = input_dir
+
+    return media_node

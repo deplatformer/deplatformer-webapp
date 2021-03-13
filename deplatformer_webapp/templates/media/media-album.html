@@ -223,27 +223,6 @@ Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i> albums:
         }
         */
 
-/*
-      // Get some values from elements on the page:
-      var $form = $( this ),
-        album_name = $form.find( "input[name='albumName']" ).val(),
-        album_description = $form.find( "textarea[name='albumDescription']" ).val(),
-        album_id = {{ album.id }},
-        url = $form.attr( "action" );
-      $.ajax({ url: url,
-         type: 'POST',
-         //beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', '#{form_authenticity_token}')},
-         //dataType: "json",
-         data: { album_name: album_name, album_description: album_description, album_id: album_id } ,
-         success: function (res) {
-            // check redirect
-            if (res.redirect) {
-                window.location.href = res.redirect_url;
-            }
-        }
-        });
-*/
-
 
       });
     });

@@ -220,7 +220,7 @@ def register_media(media_object, current_user, parent_node=None):
         )
         appdb.session.add(thumbnail)
         appdb.session.commit()
-        appdb.session.close()
+        # appdb.session.close()
 
             # print("Video:  Filepath: %s, %s" % (fb_dir, filepath))
             # osfilepath = os.path.join(fb_dir, filepath)
@@ -629,7 +629,7 @@ def get_usermedianode(app, top_node, input_dir=None):
             name="My Media",
             description="Media",
             container_type="ALBUM",
-            parent_id=None,
+            parent_id=top_node.id,
             source="media",
         )
         appdb.session.commit()

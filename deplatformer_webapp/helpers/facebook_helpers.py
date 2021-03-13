@@ -669,6 +669,8 @@ def upload_facebook_file(current_user, file_name, media_dir):
         derived_user_key = derive_key_from_usercreds(
             current_user.username.encode("utf-8"), current_user.password.encode("utf-8")
         )
+        appdb.session.commit()
+
         # TODO: push dir to filecoin
         # push_dir_to_filecoin(unzip_dir, derived_user_key)
 

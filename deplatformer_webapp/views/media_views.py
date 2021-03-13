@@ -118,18 +118,18 @@ def media_album_view(
 
         day = datetime.now().strftime("%d")
         month_script = datetime.now().strftime("%b")
-        directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
-
-        if directory is None:
-            flash(
-                "Media not found.",
-                "alert-danger",
-            )
-            return render_template(
-                "uploader/uploader.html",
-                breadcrumb="All Media / Upload",
-                user=current_user
-            )
+        # directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
+        #
+        # if directory is None:
+        #     flash(
+        #         "Media not found.",
+        #         "alert-danger",
+        #     )
+        #     return render_template(
+        #         "uploader/uploader.html",
+        #         breadcrumb="All Media / Upload",
+        #         user=current_user
+        #     )
 
         # Sort albums so that Profile Pictures, Cover Photos, and Videos come first
         toplevel = get_topnode(app)
@@ -166,6 +166,25 @@ def media_album_view(
             else:
                 album_object = {
                     "album": item,
+                    "cover_photo_id": None
+                }
+            second_level_album_objects.append(album_object)
+
+        if media_album is not None:
+            container = media.Media.query.filter_by(user_id=current_user.id, parent_id=media_album.id,
+                                                    container_type="CONTAINER",
+                                                    ).order_by(desc("last_modified")).first()
+            # cover_photo = media.Media.query.filter_by(user_id=current_user.id, parent_id=container.id,
+            #                             container_type="CLEAR_THUMBNAIL",
+            #                             ).order_by(desc("last_modified")).first()
+            if container and container.id:
+                album_object = {
+                    "album": media_album,
+                    "cover_photo_id": container.id
+                }
+            else:
+                album_object = {
+                    "album": media_album,
                     "cover_photo_id": None
                 }
             second_level_album_objects.append(album_object)

@@ -2,7 +2,7 @@ import os
 import sqlite3
 from datetime import datetime
 
-from flask import render_template, send_from_directory, redirect, url_for
+from flask import render_template, send_from_directory, redirect, url_for, send_file
 from flask_user import current_user, login_required
 
 from ..app import app, db
@@ -104,7 +104,9 @@ def userfile_thumbnail(
     file_id,
 ):
     if file_id is None or file_id == 'None':
-        return "File not found." #TODO: how to make 404?
+        return send_file('static/assets/scribble-photos-icon.png')
+        # return "File not found." #TODO: how to make 404?
+
 
     # directory = UserDirectories.query.filter_by(user_id=current_user.id, platform="facebook").first()
     # if directory is None:

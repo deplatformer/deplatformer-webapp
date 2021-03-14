@@ -104,7 +104,7 @@ def userfile_thumbnail(
     file_id,
 ):
     if file_id is None or file_id == 'None':
-        return send_file('static/assets/scribble-photos-icon.png')
+        return send_file(os.path.join(app.config["cwd"], 'static/assets/scribble-photos-icon.png') )
         # return "File not found." #TODO: how to make 404?
 
 

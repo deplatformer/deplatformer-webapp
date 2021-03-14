@@ -95,11 +95,13 @@ def create_app():
             migrations_folder = os.path.join(sys._MEIPASS, 'migrations')
             print(migrations_folder)
             upgrade(directory=migrations_folder)
+            app.config["cwd"] = sys._MEIPASS
     else:
         with app.app_context():
             cwd = os.path.abspath(os.path.dirname(__file__))
             print(os.path.join(cwd, "migrations"))
             upgrade(directory=os.path.join(cwd, "migrations"))
+            app.config["cwd"] = cwd
 
     return app
 

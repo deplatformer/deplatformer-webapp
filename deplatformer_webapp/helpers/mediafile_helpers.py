@@ -145,6 +145,8 @@ def register_media(media_object, current_user, parent_node=None):
     longitude = media_object.get("longitude", None)
     orientation = media_object.get("orientation", None)
     media_type = media_object.get("media_type", "IMAGE")
+    # media_path_relative = media_object.get("media_path_relative", "media")
+    # file_path_relative = media_object.get("file_path_relative", None)
 
     # create/find media container
     media_container = Media.query.filter_by(user_id=current_user.id, parent_id=parent_node.id,
@@ -197,6 +199,8 @@ def register_media(media_object, current_user, parent_node=None):
         # only generate thumbnail if media is new, otherwise assume thumb has been generated already
 
     thumbnailfilename = get_thumbnailfilename(filepath)
+    #
+    # thumbnail_relative = os.path.join(media_path_relative, thumbnailfilename)
 
     thumbnail = Media.query.filter_by(user_id=current_user.id, parent_id=media_container.id,
                                       container_type="CLEAR_THUMBNAIL",
@@ -524,6 +528,9 @@ def handle_uploaded_file(app, tmpfileid, user):
         #     filepath,
         # )
         media_info["media_path"] = media_dir
+        # media_info["media_path_relative"] = os.path.join(platform)
+        # media_info["file_path_relative"] = os.path.join(platform, filepath)
+
         parent_node = Media.query.filter_by(user_id=user.id, id=album_id,
                                             container_type="ALBUM",
                                             ).order_by(desc("last_modified")).first()
@@ -617,7 +624,7 @@ def get_usermedianode(app, top_node, input_dir=None):
     # from flask import app
     if input_dir is None:
         #get the default user dir
-        input_dir = app.config["DATA_DIR"]
+        input_dir = get_user_dir(current_user, app.config["USER_DATA_DIR"], "media")
 
     media_node = Media.query.filter_by(user_id=current_user.id, parent_id=top_node.id,
                                                 container_type="ALBUM",

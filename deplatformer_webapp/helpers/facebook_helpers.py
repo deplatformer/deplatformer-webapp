@@ -665,7 +665,7 @@ def upload_facebook_file(current_user, file_name, media_dir):
         upload_success = True
 
         # Add uploaded and parsed Facebook files to Filecoin
-        print("Encrypting and uploading files to Filecoin")
+        # print("Encrypting and uploading files to Filecoin")
         derived_user_key = derive_key_from_usercreds(
             current_user.username.encode("utf-8"), current_user.password.encode("utf-8")
         )

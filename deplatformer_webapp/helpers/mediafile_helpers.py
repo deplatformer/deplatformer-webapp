@@ -531,7 +531,8 @@ def handle_uploaded_file(app, tmpfileid, user):
         # media_info["media_path_relative"] = os.path.join(platform)
         # media_info["file_path_relative"] = os.path.join(platform, filepath)
 
-        parent_node = Media.query.filter_by(user_id=user.id, id=album_id,
+        # from https://www.reddit.com/r/flask/comments/36g2g7/af_sqlite_database_locking_problem/
+        parent_node = appdb.session.query(Media).filter_by(user_id=user.id, id=album_id,
                                             container_type="ALBUM",
                                             ).order_by(desc("last_modified")).first()
         register_media(media_info, user, parent_node)

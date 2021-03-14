@@ -55,7 +55,7 @@ const createWindow = async () => {
     if (dataToSend.includes("Serving Flask app")){
       // and load the index.html of the app.;
 
-      mainWindow.loadURL("http://localhost:5000/");
+      mainWindow.loadURL("http://127.0.0.1:5000/");
 
     }
   });

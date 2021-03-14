@@ -83,13 +83,6 @@ def create_app():
         render_as_batch=True
     )
 
-    app.wsgi_app = TusFilter(
-        app.wsgi_app,
-        upload_path='/upload_resumable',
-        tmp_dir='tmp', # todo: config this
-        callback=upload_resumable_callback,
-        flaskapp=app,
-    )
     if getattr(sys, 'frozen', False):
         with app.app_context():
             migrations_folder = os.path.join(sys._MEIPASS, 'migrations')
@@ -102,6 +95,14 @@ def create_app():
             print(os.path.join(cwd, "migrations"))
             upgrade(directory=os.path.join(cwd, "migrations"))
             app.config["cwd"] = cwd
+
+    app.wsgi_app = TusFilter(
+        app.wsgi_app,
+        upload_path='/upload_resumable',
+        tmp_dir=os.path.join(app.config["DATA_DIR"], "upload"),
+        callback=upload_resumable_callback,
+        flaskapp=app,
+    )
 
     return app
 

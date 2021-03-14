@@ -487,8 +487,8 @@ def save_upload_file(upload_file, directory, name="", media_info=None, data_dir=
 
 def handle_uploaded_file(app, tmpfileid, user):
 
-    metadata_file_location = os.path.join("tmp/" + tmpfileid + ".info")
-    file_location = os.path.join("tmp/" + tmpfileid)
+    metadata_file_location = os.path.join(app.config["DATA_DIR"], "upload", tmpfileid + ".info") # os.path.join("tmp/" + tmpfileid + ".info")
+    file_location = os.path.join(app.config["DATA_DIR"], "upload", tmpfileid) #"tmp", tmpfileid)
     with open(metadata_file_location) as f:  # todo: config this
         info_file = json.load(f)
         metadata = info_file.get("upload_metadata", None)
@@ -594,9 +594,9 @@ def handle_uploaded_file(app, tmpfileid, user):
 
 def get_topnode(app, input_dir=None):
     # from flask import app
-    if input_dir is None:
-        #get the default user dir
-        input_dir = app.config["DATA_DIR"]
+    # if input_dir is None:
+        # get the default user dir
+        # input_dir = app.config["DATA_DIR"]
 
     top_node = Media.query.filter_by(user_id=current_user.id, parent_id=None, container_type="ALBUM").order_by(desc("last_modified")).first()
     if top_node is None:

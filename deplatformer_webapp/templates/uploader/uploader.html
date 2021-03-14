@@ -3,13 +3,13 @@
 
 
 {% block extra_css %}
-<link href="https://releases.transloadit.com/uppy/v1.23.3/uppy.min.css" rel="stylesheet">
+<link href="https://releases.transloadit.com/uppy/v1.26.1/uppy.min.css" rel="stylesheet">
 {% endblock %}
 
 
 
 {% block extra_js %}
-<script src="https://releases.transloadit.com/uppy/v1.23.3/uppy.min.js"></script>
+<script src="https://releases.transloadit.com/uppy/v1.26.1/uppy.min.js"></script>
 <script>
 
   var uppy = Uppy.Core()
@@ -19,6 +19,12 @@
   target: '.DashboardContainer',
   replaceTargetContent: true,
   showProgressDetails: true,
+  doneButtonHandler: () => {
+    //this.uppy.reset()
+    //this.requestCloseModal()
+    console.log("Done Clicked")
+    location.reload()
+  },
   note: 'Images, Videos and Folders containing them',
   height: 470,
   metaFields: [
@@ -52,6 +58,13 @@ uppy.on('error', (error, response) => {
 
   console.log('error with file:', file.id)
   console.log('error message:', error)
+})
+
+uppy.on('complete', (error, response) => {
+
+    //location.reload()
+    console.log("upload completed")
+
 })
 </script>
 

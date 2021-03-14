@@ -1,6 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const {spawn} = require('cross-spawn');
+const child_process = require('child_process');
 
 let pids = []
 
@@ -12,6 +13,8 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 
 const createWindow = async () => {
   // Create the browser window.
+  console.log("Creating Window for env");
+  console.log(process.platform);
 
 
   let mainWindow = new BrowserWindow({
@@ -21,12 +24,12 @@ const createWindow = async () => {
 
   let dataToSend;
   // spawn new child process to call the python script
-  let python
+  let python;
   try {
     if (process.platform === 'linux') {
       const pathToDeplatformerFlask = path.join(__dirname, '../static/deplatformer-linux/deplatformer');  //this works for dev & release
       console.log(pathToDeplatformerFlask)
-      python = await execFile( pathToDeplatformerFlask );//'static/deplatformer-linux/deplatformer'); //, ['script1.py']);
+      python = await child_process.execFile( pathToDeplatformerFlask );//'static/deplatformer-linux/deplatformer'); //, ['script1.py']);
       pids = pids.concat( [python] );
     } else if (process.platform === 'win32') {
 	  const pathToDeplatformerFlask = path.join(__dirname, '..\\static\\deplatformer-windows\\deplatformer.exe');  //this works for dev & release

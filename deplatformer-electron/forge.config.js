@@ -32,9 +32,11 @@ module.exports = {
                 const del = require('del');
                 ncp.limit = 16;
 
-                await del(['./static/deplatformer-windows']);
+//                await del(['./static/deplatformer-windows']);
+                await del(['./static/deplatformer-linux']);
 
-                ncp("../dist/deplatformer-windows", "./static/deplatformer-windows/", function (err) {
+//                ncp("../dist/deplatformer-windows", "./static/deplatformer-windows/", function (err) {
+                ncp("../dist/deplatformer-linux", "./static/deplatformer-linux/", function (err) {
                     if (err) {
                         return console.error(err);
                     }

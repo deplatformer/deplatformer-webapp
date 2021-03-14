@@ -26,7 +26,7 @@ def homepage():
     else:
         # If content has been uploaded, route to the All media template
         # as the landing page.
-        return redirect(url_for(('media_view')))
+        return redirect(url_for(('media_album_view')))
 
 
 @app.route("/help")

@@ -96,14 +96,18 @@ def userfile(
 
 
 @app.route(
+    "/userfile//thumbnail",
+    methods=["GET"],
+)
+@app.route(
     "/userfile/<file_id>/thumbnail",
     methods=["GET"],
 )
 @login_required
 def userfile_thumbnail(
-    file_id,
+    file_id = None,
 ):
-    if file_id is None or file_id == 'None':
+    if file_id is None or file_id == 'None' or file_id == "":
         return send_file(os.path.join(app.config["cwd"], 'static/assets/scribble-photos-icon.png') )
         # return "File not found." #TODO: how to make 404?
 

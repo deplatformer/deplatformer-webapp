@@ -204,7 +204,7 @@ class TusFilter(object):
     ]
 
     def __init__(self, app, upload_path, api_base='', tmp_dir='/tmp/upload', expire=60*60*24*30, send_file=False,
-                 max_size=2**31, callback=None, flaskapp=None):
+                 max_size=2**128, callback=None, flaskapp=None):
         self.app = app
         self.tmp_dir = tmp_dir
         self.api_base = api_base

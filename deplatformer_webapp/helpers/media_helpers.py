@@ -8,7 +8,7 @@ import ffmpeg
 from PIL import Image, ImageOps
 
 
-def create_thumbnail(filepath, filename, media_type):
+def create_thumbnail(filepath, filename, media_type, ffmpeg_location="ffmpeg"):
 
     osfilepath = get_filepath(filepath, filename)
     thubnailfilename = get_thumbnailfilename(filename)
@@ -51,7 +51,23 @@ def create_thumbnail(filepath, filename, media_type):
 
         # print(ff)
 
-        ff.run(quiet=True, overwrite_output=True)
+        try:
+            if ffmpeg_location is None and app.config["FFMPEG_BINARY"] is None:
+                ffmpeg_location = "ffmpeg"
+            else:
+                ffmpeg_location = app.config["FFMPEG_BINARY"]
+        except NameError:
+            if ffmpeg_location is None:
+                ffmpeg_location = "ffmpeg"
+
+        
+        try:
+            ff.run(quiet=True, overwrite_output=True, cmd=ffmpeg_location)
+        except IOError:
+            return None
+        
+        
+        #TODO: catch errors (probably non-image non-video files)
 
     return thubnailfilename
 

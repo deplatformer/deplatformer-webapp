@@ -4,6 +4,7 @@ Configuration for Deplatformer WebApp
 import logging
 import os
 import platform
+import sys
 
 
 class Config:
@@ -50,10 +51,19 @@ class Config:
         "media": MEDIA_SQLITE_DB,
     }
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # Avoids SQLAlchemy warning
-    SQLALCHEMY_DATABASE_URI = f"sqlite:////{CORE_SQLITE_DB}"
+    SQLALCHEMY_DATABASE_URI = f"sqlite:///{CORE_SQLITE_DB}" if platform.system() == "Windows" else f"sqlite:////{CORE_SQLITE_DB}" 
     SQLALCHEMY_BINDS = {
-        "media": f"sqlite:////{MEDIA_SQLITE_DB}"
+        "media": f"sqlite:///{MEDIA_SQLITE_DB}" if platform.system() == "Windows" else f"sqlite:////{MEDIA_SQLITE_DB}" 
     }
+    
+    FFMPEG_EXECUTABLE = f"ffmpeg.exe" if platform.system() == "Windows" else f"ffmpeg" 
+    
+    #print (SQLALCHEMY_DATABASE_URI)
+    #print ("EXECUTABLE:" ,FFMPEG_EXECUTABLE)
+    
+    #FFMPEG_BINARY_LOCATION = 
+    #    f"sqlite:///{MEDIA_SQLITE_DB}" if platform.system() == "Windows" else f"sqlite:////{MEDIA_SQLITE_DB}" 
+    
 
     IPFS_STAGING_DIR = os.path.join(DATA_DIR, ".ipfs-staging")
     IPFS_DATA_DIR = os.path.join(DATA_DIR, ".ipfs-data")

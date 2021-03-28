@@ -127,7 +127,7 @@ from ..models.user_models import UserDirectories
 #     )
 #
 
-def register_media(media_object, current_user, parent_node=None):
+def register_media(media_object, current_user, parent_node=None, ffmpeg_location=None):
     appdb.session.commit()
 
     if parent_node is None:
@@ -144,7 +144,15 @@ def register_media(media_object, current_user, parent_node=None):
     latitude = media_object.get("latitude", None)
     longitude = media_object.get("longitude", None)
     orientation = media_object.get("orientation", None)
-    media_type = media_object.get("media_type", "IMAGE")
+    
+    # Determine media type
+    osfilepath = osfilepath = os.path.join(media_path, filepath)
+    if check_image_with_pil(osfilepath) is True:
+        #is image
+        media_type = media_object.get("media_type", "IMAGE")
+    else:
+        media_type = media_object.get("media_type", "VIDEO")
+    
     # media_path_relative = media_object.get("media_path_relative", "media")
     # file_path_relative = media_object.get("file_path_relative", None)
 
@@ -198,6 +206,7 @@ def register_media(media_object, current_user, parent_node=None):
 
         # only generate thumbnail if media is new, otherwise assume thumb has been generated already
 
+    
     thumbnailfilename = get_thumbnailfilename(filepath)
     #
     # thumbnail_relative = os.path.join(media_path_relative, thumbnailfilename)
@@ -208,9 +217,10 @@ def register_media(media_object, current_user, parent_node=None):
                                       name=name, filepath=thumbnailfilename).first()
 
     # todo: generate thumbnail if thumbnail file isn't found (not just thumbnail entry in DB)
+    
 
     if thumbnail is None:
-        thumbnailfilename = create_thumbnail(media_path, filepath, media_type)
+        thumbnailfilename = create_thumbnail(media_path, filepath, media_type, ffmpeg_location)
         thumbnail = Media(
             user_id=current_user.id,
             parent_id=media_container.id,
@@ -235,6 +245,13 @@ def register_media(media_object, current_user, parent_node=None):
             # osfileoutpath = os.path.join(fb_dir, thumbpath)
             # print("Video:  Thumbpath: %s" % thumbpath)
 
+
+def check_image_with_pil(path):
+    try:
+        Image.open(path)
+    except IOError:
+        return False
+    return True
 
 #
 # def albums_to_db(fb_dir):
@@ -535,7 +552,7 @@ def handle_uploaded_file(app, tmpfileid, user):
         parent_node = appdb.session.query(Media).filter_by(user_id=user.id, id=album_id,
                                             container_type="ALBUM",
                                             ).order_by(desc("last_modified")).first()
-        register_media(media_info, user, parent_node)
+        register_media(media_info, user, parent_node, app.config["FFMPEG_BINARY"])
         # register_file(media_info, media_info.get("platform", "media"), media_dir)
 #     # Unzip the uploaded file
 #     # unzip_dir = unzip(archive_filepath)

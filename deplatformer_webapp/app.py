@@ -18,7 +18,7 @@ naming_convention = {
     "pk": "pk_%(table_name)s"
 }
 
-db = SQLAlchemy(metadata=MetaData(naming_convention=naming_convention))
+db = SQLAlchemy(metadata=MetaData(naming_convention=naming_convention), engine_options={ 'connect_args': { 'timeout': 120 }})
 migrate = Migrate()
 
 from deplatformer_webapp.lib.tusfilter import TusFilter
@@ -65,14 +65,22 @@ def create_app():
     if getattr(sys, 'frozen', False):
         template_folder = os.path.join(sys._MEIPASS, 'templates')
         static_folder = os.path.join(sys._MEIPASS, 'static')
+        #print("ffmpegbinary:  ", app.config["FFMPEG_BINARY"])
         app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
+        app.config.from_object(config_class)
+        ffmpegbinary = os.path.join(sys._MEIPASS, 'ffmpeg', app.config["FFMPEG_EXECUTABLE"])
+        app.config["FFMPEG_BINARY"]= ffmpegbinary
     else:
         app = Flask(
             __name__,
             # template_folder="templates",
             static_folder="static",
         )
-    app.config.from_object(config_class)
+        app.config.from_object(config_class)
+        print(app.config["FFMPEG_EXECUTABLE"])
+        ffmpegbinary = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ffmpeg', app.config["FFMPEG_EXECUTABLE"])
+        app.config["FFMPEG_BINARY"]= ffmpegbinary
+        #print("ffmpegbinary:  ", app.config["FFMPEG_BINARY"])
 
     os.makedirs(app.config["DATA_DIR"], exist_ok=True)
 

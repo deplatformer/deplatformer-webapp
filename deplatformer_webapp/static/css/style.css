@@ -347,3 +347,7 @@ a.submenu {
     max-width: 100%;
     margin: 10px;
 }
+
+.card-img-top {
+    max-height: 640px;
+}

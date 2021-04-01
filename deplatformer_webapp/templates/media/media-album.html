@@ -155,7 +155,7 @@ Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i> albums:
   {% endif %}
 
   {% if (container.album) %}
-  <div class="col">
+  <div class="col-sm-6">
     <div class="card" style="margin-top: 30px; text-align:center; border: 0;">
         <a href="/media/{{ container.album.id }}">
         <img class="card-img-top img-fluid" src="/userfile/{{ container.container.id }}/thumbnail" {% if container.container.timestamp %} title="posted {{ container.container.timestamp }}" {% endif %}>
@@ -172,7 +172,7 @@ Your <i class="fab fa-facebook fa-lg" style="margin: 0 5px;"></i> albums:
     </div>
  </div> <!-- column -->
   {% elif (container.container) %}
-  <div class="col">
+  <div class="col-sm-6">
     <div class="card" style="margin-top: 30px; text-align:center; border: 0;">
         <a href="/userfile/view/{{ container.container.id }}">
         <img class="card-img-top img-fluid" src="/userfile/{{ container.container.id }}/thumbnail" {% if container.container.timestamp %} title="posted {{ container.container.timestamp }}" {% endif %}>

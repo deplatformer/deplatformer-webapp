@@ -34,7 +34,7 @@ def create_thumbnail(filepath, filename, media_type, ffmpeg_location="ffmpeg"):
             im = im.convert('RGB')
         # now thumbnail it
         im.thumbnail((640, 480), resample=Image.HAMMING)
-        im.save(osfileoutpath, "JPEG", quality=30)
+        im.save(osfileoutpath, "JPEG", quality=60)
 
     elif media_type == "VIDEO":
 

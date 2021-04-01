@@ -156,7 +156,7 @@ def userfile_thumbnail(
                                                      container_type="CLEAR").first()
             split_original = os.path.split(original_file.filepath)
             filename_original = split_original[1]
-            create_thumbnail(directory, filename_original, original_file.media_type)
+            create_thumbnail(fullpath, filename_original, original_file.media_type)
             return send_from_directory(fullpath, filename)
         else:
             raise e

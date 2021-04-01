@@ -113,7 +113,7 @@ uppy.on('error', (error, response) => {
     <div class="row">
   {% endif %}
 
-  <div class="col">
+  <div class="col-sm-3">
 
     <a href="/media/{{ album.album.id }}">
     <div class="card" style="margin-top: 30px; text-align:center">
@@ -127,7 +127,7 @@ uppy.on('error', (error, response) => {
 
  </div> <!-- column -->
 
-  {% if loop.index % 3 == 0 %}
+  {% if loop.index % 4 == 0 %}
     </div> <!-- row -->
     <div class="row">
   {% endif %}

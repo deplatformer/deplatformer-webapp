@@ -5,7 +5,9 @@ block_cipher = None
 
 a = Analysis(['run.py'],
              pathex=['Y:\\'],
-             binaries=[],     
+             binaries=[
+				('ffmpeg\\ffmpeg.exe', 'ffmpeg')
+			 ],     
 			 datas=[
 				('.\\deplatformer_webapp\\static\\', 'static'),
 				('.\\deplatformer_webapp\\templates\\', 'templates'),
